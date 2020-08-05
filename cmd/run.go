@@ -37,7 +37,9 @@ you must have a main.go file in workdir and code in the directory named pkg.`,
 		stop := make(chan bool)
 		go run.Reload(command, stop)
 		pwd, _ := os.Getwd()
-		dirs, err := run.GetDirList(filepath.Join(pwd, "pkg"))
+		pkgs, err := run.GetDirList(filepath.Join(pwd, "pkg"))
+		cmds, err := run.GetDirList(filepath.Join(pwd, "cmd"))
+		dirs := append(pkgs, cmds...)
 		if err != nil {
 			output.Fatalln(err)
 		}

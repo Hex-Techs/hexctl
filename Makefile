@@ -8,5 +8,8 @@ build-vendor: main.go vendor/
 		rm -rf ./bin || mkdir ./bin
 		CGO_ENABLED=0 go build -mod vendor -v -o ./bin/n main.go
 
+install:
+		cp ./bin/n ${GOPATH}/bin/
+
 clean:
 		rm -rf ./bin
