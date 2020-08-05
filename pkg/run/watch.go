@@ -12,6 +12,7 @@ import (
 )
 
 var (
+	eventTime           = make(map[string]int64)
 	watchExts           = []string{".go"}
 	ignoredFilesRegExps = []string{
 		`.#(\w+).go$`,
@@ -44,9 +45,14 @@ func NewWatcher(paths []string, stop chan bool) {
 					continue
 				}
 				op := e.Op.String()
+				mt := getFileModTime(e.Name)
 				if op == "CREATE" || op == "REMOVE" || op == "WRITE" {
+					if mt == eventTime[e.Name] {
+						continue
+					}
 					stop <- true
 				}
+				eventTime[e.Name] = mt
 			case err, ok := <-watcher.Errors:
 				if !ok {
 					return

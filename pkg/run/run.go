@@ -4,6 +4,8 @@ import (
 	"io"
 	"os"
 	"os/exec"
+	"syscall"
+	"time"
 
 	"github.com/Fize/n/pkg/output"
 )
@@ -20,16 +22,19 @@ func Reload(command []string, stop chan bool) {
 	for {
 		select {
 		case <-stop:
-			kill()
+			Kill()
+			time.Sleep(1 * time.Second)
 			start(command)
 		}
 	}
 }
 
-func kill() {
-	err := cmd.Process.Kill()
+func Kill() {
+	pgid, err := syscall.Getpgid(cmd.Process.Pid)
 	if err != nil {
 		output.Errorln("kill process with error:", err)
+	} else {
+		syscall.Kill(-pgid, 15) // note the minus sign
 	}
 }
 
@@ -37,6 +42,7 @@ func start(command []string) {
 	goCmd := []string{"run", "main.go"}
 	goCmd = append(goCmd, command...)
 	cmd = exec.Command("go", goCmd...)
+	cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	if err := cmd.Start(); err != nil {

@@ -17,7 +17,9 @@ package cmd
 
 import (
 	"os"
+	"os/signal"
 	"path/filepath"
+	"syscall"
 
 	"github.com/Fize/n/pkg/output"
 
@@ -43,8 +45,15 @@ you must have a main.go file in workdir and code in the directory named pkg.`,
 		if err != nil {
 			output.Fatalln(err)
 		}
-		run.NewWatcher(dirs, stop)
+		go run.NewWatcher(dirs, stop)
+		sigs := make(chan os.Signal, 1)
+		signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM, os.Interrupt)
 		for {
+			select {
+			case <-sigs:
+				run.Kill()
+				os.Exit(0)
+			}
 		}
 	},
 }
