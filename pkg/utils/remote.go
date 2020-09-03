@@ -18,7 +18,6 @@ const (
 	DefaultPort    = 22
 	DefaultUser    = "root"
 	DefaultKeyFile = "~/.ssh/id_rsa"
-	DefaultTmp     = "/tmp/.n/"
 )
 
 // NewRemoteOption return a new RemoteOption
@@ -47,25 +46,25 @@ func NewRemoteOption(host, port, user, password, key, netdevice string) (*Remote
 			return nil
 		},
 	}
-	if client, err := ssh.Dial("tcp", fmt.Sprintf("%s:%s", host, port), clientConfig); err != nil {
+	client, err := ssh.Dial("tcp", fmt.Sprintf("%s:%s", host, port), clientConfig)
+	if err != nil {
 		return nil, err
-	} else {
-		remote := &RemoteOption{
-			Host:      host,
-			Port:      port,
-			User:      user,
-			KeyFile:   &key,
-			Password:  &password,
-			NetDevice: netdevice,
-		}
-		if remote.Session, err = client.NewSession(); err != nil {
-			return nil, err
-		}
-		if remote.SftpClient, err = sftp.NewClient(client); err != nil {
-			return nil, err
-		}
-		return remote, nil
 	}
+	remote := &RemoteOption{
+		Host:      host,
+		Port:      port,
+		User:      user,
+		KeyFile:   &key,
+		Password:  &password,
+		NetDevice: netdevice,
+	}
+	if remote.Session, err = client.NewSession(); err != nil {
+		return nil, err
+	}
+	if remote.SftpClient, err = sftp.NewClient(client); err != nil {
+		return nil, err
+	}
+	return remote, nil
 }
 
 type RemoteOption struct {

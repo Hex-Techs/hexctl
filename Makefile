@@ -9,7 +9,7 @@ build-vendor: main.go vendor/
 		CGO_ENABLED=0 go build -mod vendor -v -o ./bin/n main.go
 
 install:
-		cp ./bin/n ${GOPATH}/bin/
+		cp $(shell pwd)/bin/n $(shell go env GOPATH)/bin/
 
 clean:
-		rm -rf ./bin
+		rm -rf $(shell pwd)/bin

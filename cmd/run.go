@@ -37,7 +37,6 @@ Gin or other web project, it will watch *.go file and when these file changed n 
 you must have a main.go file in workdir and code in the directory named pkg.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		stop := make(chan bool)
-		go run.Reload(command, stop)
 		pwd, _ := os.Getwd()
 		pkgs, err := run.GetDirList(filepath.Join(pwd, "pkg"))
 		cmds, err := run.GetDirList(filepath.Join(pwd, "cmd"))
@@ -46,6 +45,7 @@ you must have a main.go file in workdir and code in the directory named pkg.`,
 			output.Fatalln(err)
 		}
 		go run.NewWatcher(dirs, stop)
+		go run.Reload(command, stop)
 		sigs := make(chan os.Signal, 1)
 		signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM, os.Interrupt)
 		for {

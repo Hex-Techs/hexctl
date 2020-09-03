@@ -16,6 +16,8 @@ limitations under the License.
 package cmd
 
 import (
+	"strings"
+
 	"github.com/Fize/n/pkg/cluster"
 	"github.com/Fize/n/pkg/output"
 	"github.com/Fize/n/pkg/utils"
@@ -62,7 +64,13 @@ quickly deploy a component for exist kubernetes cluster.`,
 			}
 			// join cluster
 		}
-		cmd.Help()
+		if validateArgsLocal(args) {
+			output.Noteln("install local cluster")
+			cluster.Run(&clusterCommand)
+		} else {
+			output.Noteln("install remote cluster")
+		}
+		// cmd.Help()
 	},
 }
 
@@ -89,4 +97,17 @@ func init() {
 	clusterCmd.Flags().StringVarP(&clusterCommand.Iface, "iface", "", "eth0", "network device, default: eth0.")
 
 	rootCmd.AddCommand(clusterCmd)
+}
+
+func validateArgsLocal(args []string) bool {
+	if len(args) > 1 {
+		output.Fatalf("Unknown args %v, only one arg is accepted.\n", args)
+	}
+	if len(args) == 0 {
+		return false
+	}
+	if strings.ToLower(args[0]) != "local" {
+		output.Fatalf("Unknown args %v, only one arg is accepted.\n", args)
+	}
+	return true
 }

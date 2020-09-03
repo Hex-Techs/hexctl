@@ -30,12 +30,9 @@ import (
 var rootCmd = &cobra.Command{
 	Use:   "n",
 	Short: "nenly command line",
-	Long: `n is a CLI for nenly ops that manage infra.
-This application is a tool to manage nenly infra
+	Long: `n is a CLI for ops that manage infra.
+This application is a tool to manage yourself infra
 includ kubernetes cluster, kube config, code project.`,
-	// Uncomment the following line if your bare application
-	// has an action associated with it:
-	//	Run: func(cmd *cobra.Command, args []string) { },
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.

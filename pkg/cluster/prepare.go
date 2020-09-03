@@ -27,52 +27,53 @@ gpgkey=https://mirrors.huaweicloud.com/kubernetes/yum/doc/yum-key.gpg https://mi
 
 // Run run Command
 func Run(ncmd *ClusterCommand) {
-	ncmd.Port = DefaultPort
-	if ncmd.Master != "" {
-		k := &KubernetesCluster{}
-		k.initMaster(ncmd.APIServer, DefaultPort, ncmd.Key, ncmd.Password, ncmd.Iface)
-		k.initConfig(ncmd)
+	renderVagrantFile()
+	// ncmd.Port = DefaultPort
+	// if ncmd.Master != "" {
+	// k := &KubernetesCluster{}
+	// k.initMaster(ncmd.APIServer, DefaultPort, ncmd.Key, ncmd.Password, ncmd.Iface)
+	// k.initConfig(ncmd)
 
-		taskOutput("init a new kubernetes cluster")
+	// taskOutput("init a new kubernetes cluster")
 
-		setHostName(k.MasterOption)
-		setKubeRepo(k.MasterOption, ncmd.Repo)
-		swapoff(k.MasterOption)
-		createDir(k.MasterOption)
-		formatDisk(k.MasterOption, ncmd.Volume)
-		mount(k.MasterOption, ncmd.Volume)
+	// setHostName(k.MasterOption)
+	// setKubeRepo(k.MasterOption, ncmd.Repo)
+	// swapoff(k.MasterOption)
+	// createDir(k.MasterOption)
+	// formatDisk(k.MasterOption, ncmd.Volume)
+	// mount(k.MasterOption, ncmd.Volume)
 
-		taskOutput("init a new kubernetes cluster success!")
-	} else {
-		k := &KubernetesCluster{}
-		k.initConfig(ncmd)
-		taskOutput("join a kubernetes cluster")
+	// taskOutput("init a new kubernetes cluster success!")
+	// } else {
+	// k := &KubernetesCluster{}
+	// k.initConfig(ncmd)
+	// taskOutput("join a kubernetes cluster")
 
-		for _, r := range ncmd.Node {
-			k.initNode(r, DefaultPort, ncmd.Key, ncmd.Password, ncmd.Iface)
-		}
+	// for _, r := range ncmd.Node {
+	// k.initNode(r, DefaultPort, ncmd.Key, ncmd.Password, ncmd.Iface)
+	// }
 
-		var stop chan bool
+	// var stop chan bool
 
-		for _, r := range k.NodeOption {
-			go func(r *utils.RemoteOption, stop chan bool) {
-				setHostName(r)
-				setKubeRepo(r, ncmd.Repo)
-				swapoff(r)
-				createDir(r)
-				formatDisk(r, ncmd.Volume)
-				mount(r, ncmd.Volume)
-				stop <- true
-			}(r, stop)
-		}
+	// for _, r := range k.NodeOption {
+	// go func(r *utils.RemoteOption, stop chan bool) {
+	// setHostName(r)
+	// setKubeRepo(r, ncmd.Repo)
+	// swapoff(r)
+	// createDir(r)
+	// formatDisk(r, ncmd.Volume)
+	// mount(r, ncmd.Volume)
+	// stop <- true
+	// }(r, stop)
+	// }
 
-		for {
-			if len(stop) == len(k.NodeOption) {
-				break
-			}
-		}
-		taskOutput("join a kubernetes cluster success!")
-	}
+	// for {
+	// if len(stop) == len(k.NodeOption) {
+	// break
+	// }
+	// }
+	// taskOutput("join a kubernetes cluster success!")
+	// }
 }
 
 func (kc *KubernetesCluster) initMaster(host, port, key, password, netDevice string) {
