@@ -27,7 +27,9 @@ gpgkey=https://mirrors.huaweicloud.com/kubernetes/yum/doc/yum-key.gpg https://mi
 
 // Run run Command
 func Run(ncmd *ClusterCommand) {
-	renderVagrantFile()
+	handleWorkDir()
+	renderVagrantFile(ncmd)
+	startVirtualMachine()
 	// ncmd.Port = DefaultPort
 	// if ncmd.Master != "" {
 	// k := &KubernetesCluster{}

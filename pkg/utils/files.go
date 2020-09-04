@@ -22,3 +22,22 @@ func Write(content, dst string) {
 		os.Exit(1)
 	}
 }
+
+func IsExists(name string) bool {
+	_, err := os.Stat(name)
+	if err != nil {
+		if os.IsExist(err) {
+			return true
+		}
+		return false
+	}
+	return true
+}
+
+func IsDir(name string) bool {
+	s, err := os.Stat(name)
+	if err != nil {
+		return false
+	}
+	return s.IsDir()
+}
