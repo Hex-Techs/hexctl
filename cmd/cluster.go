@@ -16,98 +16,111 @@ limitations under the License.
 package cmd
 
 import (
-	"strings"
-
 	"github.com/Fize/n/pkg/cluster"
 	"github.com/Fize/n/pkg/output"
-	"github.com/Fize/n/pkg/utils"
 	"github.com/spf13/cobra"
 )
 
 // clusterCmd represents the cluster command
 var clusterCmd = &cobra.Command{
 	Use:   "cluster",
-	Short: "deploy a new or a component for kubernetes cluster",
+	Short: "manage kubernetes cluster",
 	Long: `cluster is a command for n that manage kubernetes cluster.
-quickly create a new kubernetes cluster.
+quickly create or destroy a kubernetes cluster.
 quickly deploy a component for exist kubernetes cluster.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		if clusterCommand.Master != "" {
-			if err := utils.ValidataIP(clusterCommand.Master); err != nil {
-				output.Fatalln(err)
+		cmd.Help()
+	},
+}
+
+var newCmd = &cobra.Command{
+	Use:   "new",
+	Short: "deploy a new or a component for kubernetes cluster",
+	Long:  `cluster new is command for create a new kubernetes cluster`,
+	Run: func(cmd *cobra.Command, args []string) {
+		if len(args) != 0 {
+			if len(args) != 1 {
+				output.Fatalln("too many args get, must given one local or remote")
 			}
-			if err := cluster.PreCheck(clusterCommand.PodCIDR, clusterCommand.ServiceCIDR,
-				clusterCommand.ServicePortRange, clusterCommand.Master); err != nil {
-				output.Fatalln(err)
-			}
-			// init cluster
-			// cluster.Run(password, key, "22", repo, volume, podcidr, servicecidr, apiserver, token, ca, iface, master...)
-			return
-		}
-		if len(clusterCommand.Node) != 0 {
-			if clusterCommand.APIServer == "" {
-				output.Fatalln("apiserver can not empty when join a cluster.")
-			}
-			if clusterCommand.Token == "" {
-				output.Fatalln("token can not empty when join a cluster.")
-			}
-			if clusterCommand.CAHash == "" {
-				if !clusterCommand.UnSafe {
-					output.Fatalln("ca can not empty when join a cluster use safe, unless --unsafe")
-				}
-			}
-			if err := utils.ValidataIP(clusterCommand.Node...); err != nil {
-				output.Fatalln(err)
-			}
-			if err := utils.ValidataURL(clusterCommand.APIServer); err != nil {
-				output.Fatalln(err)
-			}
-			// join cluster
-		}
-		if validateArgsLocal(args) {
-			output.Noteln("install local cluster")
-			cluster.Run(&clusterCommand)
 		} else {
-			output.Noteln("install remote cluster")
+			// 默认是local
+			args = []string{"local"}
 		}
-		// cmd.Help()
+
+		if args[0] == "local" {
+			kc := cluster.NewKubernetesCluster(&clusterCommand, "local", "n1", "init")
+			cluster.StartKubernetesCluster(kc)
+			return
+		} else if args[0] == "remote" {
+			kc := cluster.NewKubernetesCluster(&clusterCommand, "remote", clusterCommand.IP, "init")
+			cluster.StartKubernetesCluster(kc)
+			return
+		} else {
+			output.Errorf("unknown args %s, must given local or remote", args[0])
+		}
+		cmd.Help()
+	},
+}
+
+var joinCmd = &cobra.Command{
+	Use:   "join",
+	Short: "join a kubernetes cluster",
+	Long:  `cluster join is command for join a exists kubernetes cluster`,
+	Run: func(cmd *cobra.Command, args []string) {
+		if len(args) != 0 {
+			if len(args) != 1 {
+				output.Fatalln("too many args get, must given one local or remote")
+			}
+		} else {
+			// 默认是local
+			args = []string{"local"}
+		}
+
+		if args[0] == "local" {
+			kc := cluster.NewKubernetesCluster(&clusterCommand, "local", "n2", "join")
+			cluster.StartKubernetesCluster(kc)
+			return
+		} else if args[0] == "remote" {
+			kc := cluster.NewKubernetesCluster(&clusterCommand, "remote", clusterCommand.IP, "join")
+			cluster.StartKubernetesCluster(kc)
+			return
+		} else {
+			output.Errorf("unknown args %s, must given local or remote", args[0])
+		}
+		cmd.Help()
+	},
+}
+
+var destroyCmd = &cobra.Command{
+	Use:   "destroy",
+	Short: "destroy local environment",
+	Run: func(cmd *cobra.Command, args []string) {
+		cluster.DestroyVirtualMachine()
 	},
 }
 
 var clusterCommand cluster.ClusterCommand
 
 func init() {
-	clusterCmd.Flags().StringVarP(&clusterCommand.Master, "master", "m", "", "kubernetes master address.")
-	clusterCmd.Flags().StringSliceVarP(&clusterCommand.Node, "node", "n", []string{}, "kubernetes node address.")
-	clusterCmd.Flags().StringSliceVarP(&clusterCommand.CertHost, "cert-host", "", []string{}, "these host will joins the certificate.")
-	clusterCmd.Flags().StringVarP(&clusterCommand.Repo, "repo", "", "", "image repo address.")
-	clusterCmd.Flags().StringVarP(&clusterCommand.Volume, "volume", "v", "", "the disk character used to format a disk. if not, do not format")
-	clusterCmd.Flags().StringVarP(&clusterCommand.APIServer, "apiserver", "", "", "cluster apiserver url.")
-	clusterCmd.Flags().StringVarP(&clusterCommand.PodCIDR, "pod-network-cidr", "", "", "Specify range of IP addresses for the pod network. If set, the control plane will automatically allocate CIDRs for every node.")
-	clusterCmd.Flags().StringVarP(&clusterCommand.ServiceCIDR, "service-cidr", "", "", "Use alternative range of IP address for service VIPs. (default 10.96.0.0/12).")
-	clusterCmd.Flags().StringVarP(&clusterCommand.ServicePortRange, "service-port-range", "", "", "Specifies the range of node ports that the service can use.")
-	clusterCmd.Flags().StringVarP(&clusterCommand.Token, "token", "t", "", "cluster token.")
-	clusterCmd.Flags().StringVarP(&clusterCommand.CAHash, "ca-hash", "", "", "ca public key hash.")
-	clusterCmd.Flags().BoolVarP(&clusterCommand.UnSafe, "unsafe", "", false, "allow join cluster without --ca.")
-	clusterCmd.Flags().BoolVarP(&clusterCommand.IPVS, "ipvs", "", false, "set kube-proxy mode is ipvs.")
-	clusterCmd.Flags().BoolVarP(&clusterCommand.ControlPlane, "control-plane", "", false, "set node as master join the exists cluster.")
-	clusterCmd.Flags().StringSliceVarP(&clusterCommand.Ignore, "ignore", "i", []string{}, "A list of checks whose errors will be shown as warnings.")
+	newCmd.Flags().StringVarP(&clusterCommand.PodCIDR, "pod-network-cidr", "", "10.244.0.0/16", "Specify range of IP addresses for the pod network. If set, the control plane will automatically allocate CIDRs for every node. (default 10.96.0.0/12).")
+	newCmd.Flags().StringVarP(&clusterCommand.ServiceCIDR, "service-cidr", "", "10.96.0.0/12", "Use alternative range of IP address for service VIPs. (default 10.96.0.0/12).")
+	newCmd.Flags().StringVarP(&clusterCommand.ServicePortRange, "service-port-range", "", "", "Specifies the range of node ports that the service can use.")
+	newCmd.Flags().BoolVarP(&clusterCommand.CN, "cn", "", true, "set whether it is a cluster in gfw.")
+	newCmd.Flags().StringSliceVarP(&clusterCommand.Ignore, "ignore", "i", []string{}, "A list of checks whose errors will be shown as warnings.")
+	// newCmd.Flags().StringVarP(&clusterCommand.Iface, "iface", "", "eth0", "network device, default: eth0.")
+	newCmd.Flags().StringVarP(&clusterCommand.Repo, "image-repository", "", "", "image repository mirror")
+
+	joinCmd.Flags().StringVarP(&clusterCommand.Token, "token", "t", "", "cluster token.")
+	joinCmd.Flags().StringVarP(&clusterCommand.CAHash, "ca-hash", "", "", "ca public key hash.")
+	// joinCmd.Flags().BoolVarP(&clusterCommand.UnSafe, "unsafe", "", true, "allow join cluster without --ca.")
+	joinCmd.Flags().StringVarP(&clusterCommand.Endpoint, "apiserver", "", "", "The IP address the API Server.")
+
 	clusterCmd.Flags().StringVarP(&clusterCommand.Password, "password", "p", "", "password for host.")
 	clusterCmd.Flags().StringVarP(&clusterCommand.Key, "key", "k", "", "private key for host.")
-	clusterCmd.Flags().StringVarP(&clusterCommand.Iface, "iface", "", "eth0", "network device, default: eth0.")
+	clusterCmd.Flags().StringVarP(&clusterCommand.IP, "ip", "", "", "specify the ip address of the host, which is not required if it is in local mode.")
 
+	clusterCmd.AddCommand(newCmd)
+	clusterCmd.AddCommand(joinCmd)
+	clusterCmd.AddCommand(destroyCmd)
 	rootCmd.AddCommand(clusterCmd)
-}
-
-func validateArgsLocal(args []string) bool {
-	if len(args) > 1 {
-		output.Fatalf("Unknown args %v, only one arg is accepted.\n", args)
-	}
-	if len(args) == 0 {
-		return false
-	}
-	if strings.ToLower(args[0]) != "local" {
-		output.Fatalf("Unknown args %v, only one arg is accepted.\n", args)
-	}
-	return true
 }

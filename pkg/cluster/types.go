@@ -1,25 +1,21 @@
 package cluster
 
 import (
+	"fmt"
+
+	"github.com/Fize/n/pkg/output"
 	"github.com/Fize/n/pkg/utils"
-	"k8s.io/kube-proxy/config/v1alpha1"
-	"k8s.io/kubernetes/cmd/kubeadm/app/apis/kubeadm/v1beta1"
 )
 
 const (
-	DefaultUser             = "root"
-	DefaultPort             = "22"
-	DefaultServicePortRange = "30000-32767"
+	defaultUser             = "root"
+	defaultPort             = "22"
+	defaultServicePortRange = "30000-32767"
 )
 
 // ClusterCommand n cluster command struct
 type ClusterCommand struct {
-	Master           string
-	Node             []string
-	CertHost         []string
-	Repo             string
-	Volume           string
-	APIServer        string
+	Endpoint         string
 	Token            string
 	UnSafe           bool
 	CAHash           string
@@ -28,17 +24,52 @@ type ClusterCommand struct {
 	ServiceCIDR      string
 	IPVS             bool
 	ServicePortRange string
+	Repo             string
 	Password         string
 	Key              string
 	Iface            string
-	ControlPlane     bool
 	Port             string
+	KubeVersion      string
+	DockerVersion    string
+	Type             string
+	IP               string
+	CN               bool
 }
 
 // KubernetesCluster kubernetes cluster object
 type KubernetesCluster struct {
-	MasterOption    *utils.RemoteOption
-	NodeOption      []*utils.RemoteOption
-	ClusterConfig   *v1beta1.ClusterConfiguration
-	KubeProxyConfig *v1alpha1.KubeProxyConfiguration
+	Option *utils.RemoteOption
+	ncmd   ClusterCommand
+	Type   string
+	node   string
+	method string
+}
+
+func NewKubernetesCluster(ncmd *ClusterCommand, tp, node, method string) *KubernetesCluster {
+	kc := &KubernetesCluster{
+		ncmd:   *ncmd,
+		Type:   tp,
+		node:   node,
+		method: method,
+	}
+	var err error
+	if tp == "local" {
+		ncmd.Iface = "eth1"
+	}
+	if ncmd.IP != "" {
+		kc.Option, err = utils.NewRemoteOption(ncmd.IP, defaultPort, defaultUser, ncmd.Password, ncmd.Key, ncmd.Iface)
+		if err != nil {
+			output.Fatalf("ssh %s:%s with error: %v\n", ncmd.IP, defaultPort, err)
+		}
+	}
+	return kc
+}
+
+// ifconfig eth1 | grep inet | grep -v inet6 | awk -F " " '{print $2}'
+func taskOutput(msg string) {
+	output.Notef("============================== %s ==============================\n", msg)
+}
+
+func localFormat(node, cmd string) string {
+	return fmt.Sprintf("vagrant ssh %s -c \"%s\"", node, cmd)
 }
