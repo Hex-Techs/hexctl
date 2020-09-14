@@ -16,6 +16,7 @@ func StartKubernetesCluster(kc *KubernetesCluster) {
 	if kc.method == "init" {
 		kc.initCluster()
 		kc.setKubeConfig()
+		kc.setFlannel()
 	} else {
 		kc.joinCluster()
 	}

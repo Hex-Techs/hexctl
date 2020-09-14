@@ -46,7 +46,6 @@ var newCmd = &cobra.Command{
 			// 默认是local
 			args = []string{"local"}
 		}
-
 		if args[0] == "local" {
 			kc := cluster.NewKubernetesCluster(&clusterCommand, "local", "n1", "init")
 			cluster.StartKubernetesCluster(kc)
@@ -115,9 +114,12 @@ func init() {
 	// joinCmd.Flags().BoolVarP(&clusterCommand.UnSafe, "unsafe", "", true, "allow join cluster without --ca.")
 	joinCmd.Flags().StringVarP(&clusterCommand.Endpoint, "apiserver", "", "", "The IP address the API Server.")
 
-	clusterCmd.Flags().StringVarP(&clusterCommand.Password, "password", "p", "", "password for host.")
-	clusterCmd.Flags().StringVarP(&clusterCommand.Key, "key", "k", "", "private key for host.")
-	clusterCmd.Flags().StringVarP(&clusterCommand.IP, "ip", "", "", "specify the ip address of the host, which is not required if it is in local mode.")
+	newCmd.Flags().StringVarP(&clusterCommand.Password, "password", "p", "", "password for host.")
+	newCmd.Flags().StringVarP(&clusterCommand.Key, "key", "k", "", "private key for host.")
+	newCmd.Flags().StringVarP(&clusterCommand.IP, "ip", "", "", "specify the ip address of the host, which is not required if it is in local mode.")
+	joinCmd.Flags().StringVarP(&clusterCommand.Password, "password", "p", "", "password for host.")
+	joinCmd.Flags().StringVarP(&clusterCommand.Key, "key", "k", "", "private key for host.")
+	joinCmd.Flags().StringVarP(&clusterCommand.IP, "ip", "", "", "specify the ip address of the host, which is not required if it is in local mode.")
 
 	clusterCmd.AddCommand(newCmd)
 	clusterCmd.AddCommand(joinCmd)

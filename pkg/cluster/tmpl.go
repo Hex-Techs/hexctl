@@ -72,5 +72,6 @@ net.ipv4.neigh.default.gc_thresh3 = 100000`
 	"storage-driver": "overlay2",
 	"storage-opts":["overlay2.override_kernel_check=true"]
 }`
-	flannel = ""
+	gitee  = "https://gitee.com/malzahar/nn/raw/master/kube-flannel.yml"
+	github = "https://raw.githubusercontent.com/Fize/n/master/kube-flannel.yml"
 )

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/Fize/n/pkg/output"
 	"github.com/Fize/n/pkg/utils"
 )
 
@@ -21,10 +22,22 @@ func (kc *KubernetesCluster) setRepo() {
 		utils.RunCommand(localFormat(kc.node, cmd2))
 		return
 	}
+	setSSHSession(kc)
 	kc.Option.Command.Cmd = cmd1
-	kc.Option.RunCommand()
+	s, err := kc.Option.RunCommand()
+	if err != nil {
+		output.Errorf("run command with error: %v, command: %s\n", err, cmd1)
+	} else {
+		output.Progressln(s)
+	}
+	setSSHSession(kc)
 	kc.Option.Command.Cmd = cmd2
-	kc.Option.RunCommand()
+	s, err = kc.Option.RunCommand()
+	if err != nil {
+		output.Errorf("run command with error: %v, command: %s\n", err, cmd2)
+	} else {
+		output.Progressln(s)
+	}
 }
 
 func (kc *KubernetesCluster) installClusterPackage() {
@@ -34,19 +47,37 @@ func (kc *KubernetesCluster) installClusterPackage() {
 		utils.RunCommand(localFormat(kc.node, cmd))
 		return
 	}
+	setSSHSession(kc)
 	kc.Option.Command.Cmd = cmd
-	kc.Option.RunCommand()
+	s, err := kc.Option.RunCommand()
+	if err != nil {
+		output.Errorf("run command with error: %v, command: %s\n", err, cmd)
+	} else {
+		output.Progressln(s)
+	}
 }
 
 func (kc *KubernetesCluster) setDockerConfig() {
 	taskOutput("Configure docker")
-	cmd := fmt.Sprintf(`sudo mkdir -p /etc/docker && sudo echo '%s' > /tmp/daemon.json && sudo mv /tmp/daemon.json /etc/docker/daemon.json`, strings.Replace(dockerConfig, "\"", "\\\"", -1))
+	var d string
+	if kc.Type == "local" {
+		d = strings.Replace(dockerConfig, "\"", "\\\"", -1)
+	} else {
+		d = dockerConfig
+	}
+	cmd := fmt.Sprintf(`sudo mkdir -p /etc/docker && sudo echo '%s' > /tmp/daemon.json && sudo mv /tmp/daemon.json /etc/docker/daemon.json`, d)
 	if kc.Type == "local" {
 		utils.RunCommand(localFormat(kc.node, cmd))
 		return
 	}
+	setSSHSession(kc)
 	kc.Option.Command.Cmd = cmd
-	kc.Option.RunCommand()
+	s, err := kc.Option.RunCommand()
+	if err != nil {
+		output.Errorf("run command with error: %v, command: %s\n", err, cmd)
+	} else {
+		output.Progressln(s)
+	}
 }
 
 func (kc *KubernetesCluster) enableService() {
@@ -56,8 +87,14 @@ func (kc *KubernetesCluster) enableService() {
 		utils.RunCommand(localFormat(kc.node, cmd))
 		return
 	}
+	setSSHSession(kc)
 	kc.Option.Command.Cmd = cmd
-	kc.Option.RunCommand()
+	s, err := kc.Option.RunCommand()
+	if err != nil {
+		output.Errorf("run command with error: %v, command: %s\n", err, cmd)
+	} else {
+		output.Progressln(s)
+	}
 }
 
 func (kc *KubernetesCluster) setNodeIP() {
@@ -72,18 +109,34 @@ func (kc *KubernetesCluster) initCluster() {
 	taskOutput("Init cluster")
 	var cmd string
 	if kc.ncmd.Repo != "" {
-		cmd = fmt.Sprintf(`sudo kubeadm init --apiserver-advertise-address=\$(ifconfig eth1 | grep netmask | awk -F' ' '{print \$2}') --pod-network-cidr=%s --image-repository=%s --service-cidr=%s`,
-			kc.ncmd.PodCIDR, kc.ncmd.Repo, kc.ncmd.ServiceCIDR)
+		if kc.Type == "local" {
+			cmd = fmt.Sprintf(`sudo kubeadm init --apiserver-advertise-address=\$(ifconfig eth1 | grep netmask | awk -F' ' '{print \$2}') --pod-network-cidr=%s --image-repository=%s --service-cidr=%s`,
+				kc.ncmd.PodCIDR, kc.ncmd.Repo, kc.ncmd.ServiceCIDR)
+		} else {
+			cmd = fmt.Sprintf(`sudo kubeadm init --pod-network-cidr=%s --image-repository=%s --service-cidr=%s`,
+				kc.ncmd.PodCIDR, kc.ncmd.Repo, kc.ncmd.ServiceCIDR)
+		}
 	} else {
-		cmd = fmt.Sprintf(`sudo kubeadm init --apiserver-advertise-address=\$(ifconfig eth1 | grep netmask | awk -F' ' '{print \$2}') --pod-network-cidr=%s --service-cidr=%s`,
-			kc.ncmd.PodCIDR, kc.ncmd.ServiceCIDR)
+		if kc.Type == "local" {
+			cmd = fmt.Sprintf(`sudo kubeadm init --apiserver-advertise-address=\$(ifconfig eth1 | grep netmask | awk -F' ' '{print \$2}') --pod-network-cidr=%s --service-cidr=%s`,
+				kc.ncmd.PodCIDR, kc.ncmd.ServiceCIDR)
+		} else {
+			cmd = fmt.Sprintf(`sudo kubeadm init --pod-network-cidr=%s --service-cidr=%s`,
+				kc.ncmd.PodCIDR, kc.ncmd.ServiceCIDR)
+		}
 	}
 	if kc.Type == "local" {
 		utils.RunCommand(localFormat(kc.node, cmd))
 		return
 	}
+	setSSHSession(kc)
 	kc.Option.Command.Cmd = cmd
-	kc.Option.RunCommand()
+	s, err := kc.Option.RunCommand()
+	if err != nil {
+		output.Errorf("run command with error: %v, command: %s\n", err, cmd)
+	} else {
+		output.Progressln(s)
+	}
 }
 
 func (kc *KubernetesCluster) joinCluster() {
@@ -93,28 +146,76 @@ func (kc *KubernetesCluster) joinCluster() {
 		utils.RunCommand(localFormat(kc.node, cmd))
 		return
 	}
+	setSSHSession(kc)
 	kc.Option.Command.Cmd = cmd
-	kc.Option.RunCommand()
+	s, err := kc.Option.RunCommand()
+	if err != nil {
+		output.Errorf("run command with error: %v, command: %s\n", err, cmd)
+	} else {
+		output.Progressln(s)
+	}
 }
 
 func (kc *KubernetesCluster) setKubeConfig() {
 	taskOutput("Set kubeconfig")
-	cmd := `mkdir -p $HOME/.kube && sudo cp -i /etc/kubernetes/admin.conf \$HOME/.kube/config && sudo chown \$(id -u):\$(id -g) \$HOME/.kube/config`
+	var cmd string
+	if kc.Type == "local" {
+		cmd = `mkdir -p \$HOME/.kube && sudo cp -i /etc/kubernetes/admin.conf \$HOME/.kube/config && sudo chown \$(id -u):\$(id -g) \$HOME/.kube/config`
+	} else {
+		cmd = `mkdir -p $HOME/.kube && sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config && sudo chown $(id -u):$(id -g) $HOME/.kube/config`
+	}
 	if kc.Type == "local" {
 		utils.RunCommand(localFormat(kc.node, cmd))
 		return
 	}
+	setSSHSession(kc)
 	kc.Option.Command.Cmd = cmd
-	kc.Option.RunCommand()
+	s, err := kc.Option.RunCommand()
+	if err != nil {
+		output.Errorf("run command with error: %v, command: %s\n", err, cmd)
+	} else {
+		output.Progressln(s)
+	}
 }
 
 func (kc *KubernetesCluster) setFlannel() {
 	taskOutput("Set flannel network cni")
-	cmd := fmt.Sprintf("kubectl apply -f ")
+	var cmd1 string
+	if kc.ncmd.CN {
+		cmd1 = fmt.Sprintf("curl -s -o /tmp/flannel.yml %s", gitee)
+	} else {
+		cmd1 = fmt.Sprintf("curl -s -o /tmp/flannel.yml %s", github)
+	}
+	cmd2 := fmt.Sprintf("sed -i 's#10.244.0.0/16#%s#' /tmp/flannel.yml", kc.ncmd.PodCIDR)
+	cmd3 := fmt.Sprintf("kubectl apply -f /tmp/flannel.yml")
 	if kc.Type == "local" {
-		utils.RunCommand(localFormat(kc.node, cmd))
+		utils.RunCommand(localFormat(kc.node, cmd1))
+		utils.RunCommand(localFormat(kc.node, cmd2))
+		utils.RunCommand(localFormat(kc.node, cmd3))
 		return
 	}
-	kc.Option.Command.Cmd = cmd
-	kc.Option.RunCommand()
+	setSSHSession(kc)
+	kc.Option.Command.Cmd = cmd1
+	s, err := kc.Option.RunCommand()
+	if err != nil {
+		output.Errorf("run command with error: %v, command: %s\n", err, cmd1)
+	} else {
+		output.Progressln(s)
+	}
+	setSSHSession(kc)
+	kc.Option.Command.Cmd = cmd2
+	s, err = kc.Option.RunCommand()
+	if err != nil {
+		output.Errorf("run command with error: %v, command: %s\n", err, cmd2)
+	} else {
+		output.Progressln(s)
+	}
+	setSSHSession(kc)
+	kc.Option.Command.Cmd = cmd3
+	s, err = kc.Option.RunCommand()
+	if err != nil {
+		output.Errorf("run command with error: %v, command: %s\n", err, cmd3)
+	} else {
+		output.Progressln(s)
+	}
 }

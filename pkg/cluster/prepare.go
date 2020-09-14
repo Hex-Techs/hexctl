@@ -29,8 +29,10 @@ func (kc *KubernetesCluster) argsCheck() {
 }
 
 func (kc *KubernetesCluster) swapoff() {
-	if err := os.Chdir(homeDir()); err != nil {
-		output.Fatalln(err)
+	if kc.Type == "local" {
+		if err := os.Chdir(homeDir()); err != nil {
+			output.Fatalln(err)
+		}
 	}
 	taskOutput("Disable swap")
 	cmd1 := "sudo swapoff -a && sudo sysctl -w vm.swappiness=0"
@@ -42,12 +44,30 @@ func (kc *KubernetesCluster) swapoff() {
 		utils.RunCommand(localFormat(kc.node, cmd3))
 		return
 	}
+	setSSHSession(kc)
 	kc.Option.Command.Cmd = cmd1
-	kc.Option.RunCommand()
+	s, err := kc.Option.RunCommand()
+	if err != nil {
+		output.Errorf("run command with error: %v, command: %s\n", err, cmd1)
+	} else {
+		output.Progressln(s)
+	}
+	setSSHSession(kc)
 	kc.Option.Command.Cmd = cmd2
-	kc.Option.RunCommand()
+	s, err = kc.Option.RunCommand()
+	if err != nil {
+		output.Errorf("run command with error: %v, command: %s\n", err, cmd1)
+	} else {
+		output.Progressln(s)
+	}
+	setSSHSession(kc)
 	kc.Option.Command.Cmd = cmd3
-	kc.Option.RunCommand()
+	s, err = kc.Option.RunCommand()
+	if err != nil {
+		output.Errorf("run command with error: %v, command: %s\n", err, cmd1)
+	} else {
+		output.Progressln(s)
+	}
 }
 
 func (kc *KubernetesCluster) installPackage() {
@@ -57,8 +77,14 @@ func (kc *KubernetesCluster) installPackage() {
 		utils.RunCommand(localFormat(kc.node, cmd))
 		return
 	}
+	setSSHSession(kc)
 	kc.Option.Command.Cmd = cmd
-	kc.Option.RunCommand()
+	s, err := kc.Option.RunCommand()
+	if err != nil {
+		output.Errorf("run command with error: %v, command: %s\n", err, cmd)
+	} else {
+		output.Progressln(s)
+	}
 }
 
 func (kc *KubernetesCluster) setKernelConfig() {
@@ -68,8 +94,14 @@ func (kc *KubernetesCluster) setKernelConfig() {
 		utils.RunCommand(localFormat(kc.node, cmd))
 		return
 	}
+	setSSHSession(kc)
 	kc.Option.Command.Cmd = cmd
-	kc.Option.RunCommand()
+	s, err := kc.Option.RunCommand()
+	if err != nil {
+		output.Errorf("run command with error: %v, command: %s\n", err, cmd)
+	} else {
+		output.Progressln(s)
+	}
 }
 
 func validateCIDR(cidr string) error {

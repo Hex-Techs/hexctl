@@ -52,17 +52,18 @@ func NewKubernetesCluster(ncmd *ClusterCommand, tp, node, method string) *Kubern
 		node:   node,
 		method: method,
 	}
-	var err error
-	if tp == "local" {
-		ncmd.Iface = "eth1"
-	}
-	if ncmd.IP != "" {
-		kc.Option, err = utils.NewRemoteOption(ncmd.IP, defaultPort, defaultUser, ncmd.Password, ncmd.Key, ncmd.Iface)
-		if err != nil {
-			output.Fatalf("ssh %s:%s with error: %v\n", ncmd.IP, defaultPort, err)
-		}
-	}
 	return kc
+}
+
+func setSSHSession(kc *KubernetesCluster) {
+	option, err := utils.NewRemoteOption(kc.ncmd.IP, defaultPort, defaultUser, kc.ncmd.Password, kc.ncmd.Key, kc.ncmd.Iface)
+	if err != nil {
+		output.Fatalf("ssh %s:%s with error: %v\n", kc.ncmd.IP, defaultPort, err)
+	}
+	kc.Option = option
+	var command utils.Command
+	option.Command = &command
+	kc.Option = option
 }
 
 // ifconfig eth1 | grep inet | grep -v inet6 | awk -F " " '{print $2}'
