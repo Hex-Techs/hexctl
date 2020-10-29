@@ -17,8 +17,8 @@ require (
 	golang.org/x/sys v0.0.0-20200724161237-0e2f3a69832c // indirect
 	k8s.io/apimachinery v0.18.6
 	k8s.io/client-go v0.18.6
-	k8s.io/kube-proxy v0.0.0
-	k8s.io/kubernetes v1.18.6
+	k8s.io/kube-proxy v0.0.0 // indirect
+	k8s.io/kubernetes v1.18.6 // indirect
 )
 
 replace k8s.io/api v0.0.0 => k8s.io/api v0.18.6

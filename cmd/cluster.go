@@ -107,7 +107,7 @@ func init() {
 	newCmd.Flags().BoolVarP(&clusterCommand.CN, "cn", "", true, "set whether it is a cluster in gfw.")
 	newCmd.Flags().StringSliceVarP(&clusterCommand.Ignore, "ignore", "i", []string{}, "A list of checks whose errors will be shown as warnings.")
 	// newCmd.Flags().StringVarP(&clusterCommand.Iface, "iface", "", "eth0", "network device, default: eth0.")
-	newCmd.Flags().StringVarP(&clusterCommand.Repo, "image-repository", "", "", "image repository mirror")
+	newCmd.Flags().StringVarP(&clusterCommand.Repo, "image-repository", "", "", "image repository mirror. e.g. registry.cn-hangzhou.aliyuncs.com/google_containers")
 
 	joinCmd.Flags().StringVarP(&clusterCommand.Token, "token", "t", "", "cluster token.")
 	joinCmd.Flags().StringVarP(&clusterCommand.CAHash, "ca-hash", "", "", "ca public key hash.")
