@@ -24,6 +24,7 @@ type ClusterCommand struct {
 	ServiceCIDR      string
 	IPVS             bool
 	ServicePortRange string
+	User             string
 	Repo             string
 	Password         string
 	Key              string
@@ -32,6 +33,7 @@ type ClusterCommand struct {
 	KubeVersion      string
 	DockerVersion    string
 	Type             string
+	CertSANs         []string
 	IP               string
 	CN               bool
 }
@@ -56,7 +58,10 @@ func NewKubernetesCluster(ncmd *ClusterCommand, tp, node, method string) *Kubern
 }
 
 func setSSHSession(kc *KubernetesCluster) {
-	option, err := utils.NewRemoteOption(kc.ncmd.IP, defaultPort, defaultUser, kc.ncmd.Password, kc.ncmd.Key, kc.ncmd.Iface)
+	if kc.ncmd.User == "" {
+		kc.ncmd.User = defaultUser
+	}
+	option, err := utils.NewRemoteOption(kc.ncmd.IP, defaultPort, kc.ncmd.User, kc.ncmd.Password, kc.ncmd.Key, kc.ncmd.Iface)
 	if err != nil {
 		output.Fatalf("ssh %s:%s with error: %v\n", kc.ncmd.IP, defaultPort, err)
 	}

@@ -90,13 +90,6 @@ type Command struct {
 }
 
 func (r *RemoteOption) RunCommand() (string, error) {
-	// var stdoutBuf, stderrBuf bytes.Buffer
-	// r.Session.Stdout = &stdoutBuf
-	// r.Session.Stderr = &stderrBuf
-	// r.Session.CombinedOutput(r.Command.Cmd)
-	// err := fmt.Sprint(r.Session.Stderr)
-	// r.Session.Close()
-	// return fmt.Sprint(r.Session.Stdout), errors.New(err)
 	b, err := r.Session.CombinedOutput(r.Command.Cmd)
 	r.Session.Close()
 	return string(b), err

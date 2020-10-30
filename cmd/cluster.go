@@ -71,7 +71,7 @@ var joinCmd = &cobra.Command{
 				output.Fatalln("too many args get, must given one local or remote")
 			}
 		} else {
-			// 默认是local
+			// default local
 			args = []string{"local"}
 		}
 
@@ -106,11 +106,14 @@ func init() {
 	newCmd.Flags().StringVarP(&clusterCommand.ServicePortRange, "service-port-range", "", "", "Specifies the range of node ports that the service can use.")
 	newCmd.Flags().BoolVarP(&clusterCommand.CN, "cn", "", true, "set whether it is a cluster in gfw.")
 	newCmd.Flags().StringSliceVarP(&clusterCommand.Ignore, "ignore", "i", []string{}, "A list of checks whose errors will be shown as warnings.")
+	newCmd.Flags().StringVarP(&clusterCommand.User, "user", "u", "", "ssh user, default, root")
 	// newCmd.Flags().StringVarP(&clusterCommand.Iface, "iface", "", "eth0", "network device, default: eth0.")
 	newCmd.Flags().StringVarP(&clusterCommand.Repo, "image-repository", "", "", "image repository mirror. e.g. registry.cn-hangzhou.aliyuncs.com/google_containers")
+	newCmd.Flags().StringSliceVarP(&clusterCommand.CertSANs, "cert-sans", "", []string{}, "Optional extra Subject Alternative Names (SANs) to use for the API Server serving certificate. Can be both IP addresses and DNS names.")
 
+	joinCmd.Flags().StringVarP(&clusterCommand.User, "user", "u", "", "ssh user, default, root")
 	joinCmd.Flags().StringVarP(&clusterCommand.Token, "token", "t", "", "cluster token.")
-	joinCmd.Flags().StringVarP(&clusterCommand.CAHash, "ca-hash", "", "", "ca public key hash.")
+	joinCmd.Flags().StringVarP(&clusterCommand.CAHash, "ca-hash", "", "", "ca public key hash, already use '--discovery-token-unsafe-skip-ca-verification' option, you can skip this option")
 	// joinCmd.Flags().BoolVarP(&clusterCommand.UnSafe, "unsafe", "", true, "allow join cluster without --ca.")
 	joinCmd.Flags().StringVarP(&clusterCommand.Endpoint, "apiserver", "", "", "The IP address the API Server.")
 
