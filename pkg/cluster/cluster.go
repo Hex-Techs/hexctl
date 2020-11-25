@@ -127,9 +127,9 @@ func (kc *KubernetesCluster) initCluster() {
 	}
 	if len(kc.ncmd.CertSANs) != 0 {
 		if len(kc.ncmd.CertSANs) == 1 {
-			cmd = fmt.Sprintf("%s ----apiserver-cert-extra-sans %s", cmd, kc.ncmd.CertSANs[0])
+			cmd = fmt.Sprintf("%s --apiserver-cert-extra-sans %s", cmd, kc.ncmd.CertSANs[0])
 		} else {
-			cmd = fmt.Sprintf("%s ----apiserver-cert-extra-sans %s", cmd, strings.Join(kc.ncmd.CertSANs, ","))
+			cmd = fmt.Sprintf("%s --apiserver-cert-extra-sans %s", cmd, strings.Join(kc.ncmd.CertSANs, ","))
 		}
 	}
 	if kc.Type == "local" {
