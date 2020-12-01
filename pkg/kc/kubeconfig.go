@@ -9,7 +9,8 @@ import (
 	"github.com/ghodss/yaml"
 )
 
-func SwitchConfig() {
+func SwitchConfig(kubeconfig string) {
+	initKubeconfig(kubeconfig)
 	cfg := GetKubeConfig()
 	i := SelectUI(cfg.Clusters)
 	cfg.CurrentContext = cfg.Clusters[i].Name
@@ -23,10 +24,11 @@ func SwitchConfig() {
 		output.Errorln(err)
 		os.Exit(1)
 	}
-	utils.Write(string(c), DefaultKubeconfig)
+	utils.Write(string(c), Kubeconfig)
 }
 
-func Show() {
+func Show(kubeconfig string) {
+	initKubeconfig(kubeconfig)
 	cfg := GetKubeConfig()
 	output.Successln(cfg.CurrentContext)
 }

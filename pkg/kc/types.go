@@ -1,25 +1,10 @@
 package kc
 
 import (
-	"fmt"
-	"os"
-	"os/user"
-
-	"github.com/Fize/n/pkg/output"
 	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
 )
 
-var DefaultKubeconfig string
-
-// init default kubeconfig
-func init() {
-	u, err := user.Current()
-	if err != nil {
-		output.Errorln(err)
-		os.Exit(1)
-	}
-	DefaultKubeconfig = fmt.Sprintf("%s/.kube/config", u.HomeDir)
-}
+var Kubeconfig string
 
 type KubeConfig struct {
 	Kind           string     `json:"kind,omitempty"`

@@ -20,6 +20,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var kubeconfig string
+
 // kcCmd represents the kc command
 var kcCmd = &cobra.Command{
 	Use:   "kc",
@@ -36,7 +38,7 @@ var switchCmd = &cobra.Command{
 			cmd.Help()
 			return
 		}
-		kc.SwitchConfig()
+		kc.SwitchConfig(kubeconfig)
 	},
 }
 
@@ -48,11 +50,12 @@ var showCmd = &cobra.Command{
 			cmd.Help()
 			return
 		}
-		kc.Show()
+		kc.Show(kubeconfig)
 	},
 }
 
 func init() {
+	kcCmd.Flags().StringVarP(&kubeconfig, "kubeconfig", "f", "", "Specify the kubeconfig file to modify, default ~/.kube/config")
 	kcCmd.AddCommand(switchCmd)
 	kcCmd.AddCommand(showCmd)
 	rootCmd.AddCommand(kcCmd)

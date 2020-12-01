@@ -3,7 +3,9 @@ package kc
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"os"
+	"os/user"
 	"strings"
 
 	"github.com/Fize/n/pkg/output"
@@ -19,9 +21,6 @@ func SelectUI(clusters []Cluster) int {
 		Active:   "\U0001F63C {{ .Name | cyan }}",
 		Inactive: "  {{ .Name | cyan }} ",
 		Selected: "\U0001F638 {{ .Name | red | cyan }}",
-		Details: `
---------- Info ----------
-{{ "Name:" | faint }}	{{ .Name }}`,
 	}
 
 	searcher := func(input string, index int) bool {
@@ -51,7 +50,7 @@ func SelectUI(clusters []Cluster) int {
 }
 
 func GetKubeConfig() KubeConfig {
-	f := utils.Read(DefaultKubeconfig)
+	f := utils.Read(Kubeconfig)
 	cfg := KubeConfig{}
 	obj := &unstructured.Unstructured{}
 
@@ -66,4 +65,17 @@ func GetKubeConfig() KubeConfig {
 		output.Errorln(err)
 	}
 	return cfg
+}
+
+func initKubeconfig(kubeconfig string) {
+	u, err := user.Current()
+	if err != nil {
+		output.Errorln(err)
+		os.Exit(1)
+	}
+	if kubeconfig == "" {
+		Kubeconfig = fmt.Sprintf("%s/.kube/config", u.HomeDir)
+	} else {
+		Kubeconfig = kubeconfig
+	}
 }
