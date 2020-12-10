@@ -6,6 +6,7 @@ A collection of tools used in development
 ```
 make
 make build-vendor
+make install
 make clean
 ```
 
