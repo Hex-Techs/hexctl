@@ -36,6 +36,10 @@ var runCmd = &cobra.Command{
 Gin or other web project, it will watch *.go file and when these file changed n will reload it,
 you must have a main.go file in workdir and code in the directory named pkg.`,
 	Run: func(cmd *cobra.Command, args []string) {
+		output.Progressf(`
+%s
+
+`, Logo)
 		stop := make(chan bool)
 		pwd, _ := os.Getwd()
 		pkgs, err := run.GetDirList(filepath.Join(pwd, "pkg"))

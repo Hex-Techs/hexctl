@@ -22,7 +22,22 @@ import (
 	"github.com/spf13/cobra"
 )
 
-const version = "0.1"
+// ___ ___                ___________           .__
+// /   |   \   ____ ___  __\__    ___/___   ____ |  |__
+// /    ~    \_/ __ \\  \/  / |    |_/ __ \_/ ___\|  |  \
+// \    Y    /\  ___/ >    <  |    |\  ___/\  \___|   Y  \
+// \___|_  /  \___  >__/\_ \ |____| \___  >\___  >___|  /
+// \/       \/      \/            \/     \/     \/
+
+const (
+	version = "v0.1"
+	Logo    = `  ___ ___                ___________           .__
+ /   |   \   ____ ___  __\__    ___/___   ____ |  |__
+/    ~    \_/ __ \\  \/  / |    |_/ __ \_/ ___\|  |  \
+\    Y    /\  ___/ >    <  |    |\  ___/\  \___|   Y  \
+ \___|_  /  \___  >__/\_ \ |____| \___  >\___  >___|  /
+       \/       \/      \/            \/     \/     \/  `
+)
 
 // versionCmd represents the version command
 var versionCmd = &cobra.Command{
@@ -30,7 +45,7 @@ var versionCmd = &cobra.Command{
 	Short: "n version",
 	Long:  `show n version.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		output.Infof("n version %s %s/%s\n", version, runtime.GOOS, runtime.GOARCH)
+		output.Progressf("%s %s %s/%s\n", Logo, version, runtime.GOOS, runtime.GOARCH)
 	},
 }
 
