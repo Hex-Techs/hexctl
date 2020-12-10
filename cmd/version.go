@@ -18,7 +18,7 @@ package cmd
 import (
 	"runtime"
 
-	"github.com/Fize/n/pkg/output"
+	"github.com/Hex-Techs/n/pkg/output"
 	"github.com/spf13/cobra"
 )
 

@@ -1,4 +1,4 @@
-module github.com/Fize/n
+module github.com/Hex-Techs/n
 
 go 1.14
 

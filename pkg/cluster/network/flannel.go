@@ -1,5 +1,15 @@
----
-apiVersion: policy/v1beta1
+package network
+
+import (
+	"bytes"
+	"text/template"
+
+	"github.com/Hex-Techs/n/pkg/output"
+)
+
+// flannel network cni yaml and template
+const (
+	Psp = `apiVersion: policy/v1beta1
 kind: PodSecurityPolicy
 metadata:
   name: psp.flannel.unprivileged
@@ -38,10 +48,9 @@ spec:
   - min: 0
     max: 65535
   seLinux:
-    rule: 'RunAsAny'
----
-kind: ClusterRole
-apiVersion: rbac.authorization.k8s.io/v1beta1
+    rule: 'RunAsAny'`
+	CrTmpl = `kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: flannel
 rules:
@@ -49,28 +58,24 @@ rules:
     resources: ['podsecuritypolicies']
     verbs: ['use']
     resourceNames: ['psp.flannel.unprivileged']
-  - apiGroups:
-      - ""
-    resources:
+  - resources:
       - pods
     verbs:
       - get
-  - apiGroups:
-      - ""
-    resources:
+    apiGroups: [{{- $.APIGROUP}}]
+  - resources:
       - nodes
     verbs:
       - list
       - watch
-  - apiGroups:
-      - ""
-    resources:
+    apiGroups: [{{- $.APIGROUP}}]
+  - resources:
       - nodes/status
+    apiGroups: [{{- $.APIGROUP}}]
     verbs:
-      - patch
----
-kind: ClusterRoleBinding
-apiVersion: rbac.authorization.k8s.io/v1beta1
+      - patch`
+	Crb = `kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: flannel
 roleRef:
@@ -80,15 +85,13 @@ roleRef:
 subjects:
 - kind: ServiceAccount
   name: flannel
-  namespace: kube-system
----
-apiVersion: v1
+  namespace: kube-system`
+	Sa = `apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: flannel
-  namespace: kube-system
----
-kind: ConfigMap
+  namespace: kube-system`
+	CmTmpl = `kind: ConfigMap
 apiVersion: v1
 metadata:
   name: kube-flannel-cfg
@@ -119,13 +122,12 @@ data:
     }
   net-conf.json: |
     {
-      "Network": "10.244.0.0/16",
+      "Network": "{{- $.CIDR }}",
       "Backend": {
         "Type": "vxlan"
       }
-    }
----
-apiVersion: apps/v1
+    }`
+	Ds = `apiVersion: apps/v1
 kind: DaemonSet
 metadata:
   name: kube-flannel-ds-amd64
@@ -218,4 +220,27 @@ spec:
             path: /etc/cni/net.d
         - name: flannel-cfg
           configMap:
-            name: kube-flannel-cfg
+            name: kube-flannel-cfg`
+)
+
+// GenerateFlannelCR generate flannel yaml
+func GenerateFlannelCR(version string) string {
+	tpl, err := template.New("cr.yaml").Parse(CrTmpl)
+	if err != nil {
+		output.Fatalln(err)
+	}
+	b := new(bytes.Buffer)
+	tpl.Execute(b, map[string]string{"APIGROUP": version})
+	return b.String()
+}
+
+// GenerateFlannelCM generate flannel yaml
+func GenerateFlannelCM(cidr string) string {
+	tpl, err := template.New("cm.yaml").Parse(CmTmpl)
+	if err != nil {
+		output.Fatalln(err)
+	}
+	b := new(bytes.Buffer)
+	tpl.Execute(b, map[string]string{"CIDR": cidr})
+	return b.String()
+}

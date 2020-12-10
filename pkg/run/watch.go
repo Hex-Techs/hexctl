@@ -7,7 +7,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Fize/n/pkg/output"
+	"github.com/Hex-Techs/n/pkg/output"
 	"github.com/fsnotify/fsnotify"
 )
 

@@ -6,8 +6,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/Fize/n/pkg/output"
-	"github.com/Fize/n/pkg/utils"
+	"github.com/Hex-Techs/n/pkg/output"
+	"github.com/Hex-Techs/n/pkg/utils"
 )
 
 func (kc *KubernetesCluster) argsCheck() {
@@ -50,7 +50,7 @@ func (kc *KubernetesCluster) swapoff() {
 	if err != nil {
 		output.Errorf("run command with error: %v, command: %s\n", err, cmd1)
 	} else {
-		output.Progressln(s)
+		output.Infoln(s)
 	}
 	setSSHSession(kc)
 	kc.Option.Command.Cmd = cmd2
@@ -58,7 +58,7 @@ func (kc *KubernetesCluster) swapoff() {
 	if err != nil {
 		output.Errorf("run command with error: %v, command: %s\n", err, cmd1)
 	} else {
-		output.Progressln(s)
+		output.Infoln(s)
 	}
 	setSSHSession(kc)
 	kc.Option.Command.Cmd = cmd3
@@ -66,7 +66,7 @@ func (kc *KubernetesCluster) swapoff() {
 	if err != nil {
 		output.Errorf("run command with error: %v, command: %s\n", err, cmd1)
 	} else {
-		output.Progressln(s)
+		output.Infoln(s)
 	}
 }
 
@@ -83,7 +83,7 @@ func (kc *KubernetesCluster) installPackage() {
 	if err != nil {
 		output.Errorf("run command with error: %v, command: %s\n", err, cmd)
 	} else {
-		output.Progressln(s)
+		output.Infoln(s)
 	}
 }
 
@@ -100,7 +100,7 @@ func (kc *KubernetesCluster) setKernelConfig() {
 	if err != nil {
 		output.Errorf("run command with error: %v, command: %s\n", err, cmd)
 	} else {
-		output.Progressln(s)
+		output.Infoln(s)
 	}
 }
 

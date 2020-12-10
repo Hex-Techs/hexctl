@@ -2,9 +2,11 @@ package cluster
 
 import (
 	"fmt"
+	"os"
 
-	"github.com/Fize/n/pkg/output"
-	"github.com/Fize/n/pkg/utils"
+	"github.com/Hex-Techs/n/pkg/output"
+	"github.com/Hex-Techs/n/pkg/utils"
+	"golang.org/x/crypto/ssh/terminal"
 )
 
 const (
@@ -73,7 +75,25 @@ func setSSHSession(kc *KubernetesCluster) {
 
 // ifconfig eth1 | grep inet | grep -v inet6 | awk -F " " '{print $2}'
 func taskOutput(msg string) {
-	output.Notef("============================== %s ==============================\n", msg)
+	fd := int(os.Stdin.Fd())
+	length, _, err := terminal.GetSize(fd)
+	if err != nil {
+		output.Errorln(err)
+		return
+	}
+	if length > 500 {
+		length = 500
+	}
+	format := fmt.Sprintf("TASK: [%s] ", msg)
+	mius := length - len(format)
+	if mius <= 0 {
+		output.Progressln(format)
+	} else {
+		for i := 0; i < mius; i++ {
+			format = format + "*"
+		}
+		output.Progressln(format)
+	}
 }
 
 func localFormat(node, cmd string) string {

@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"os"
 
-	"github.com/Fize/n/pkg/output"
-	"github.com/Fize/n/pkg/utils"
+	"github.com/Hex-Techs/n/pkg/output"
+	"github.com/Hex-Techs/n/pkg/utils"
 	"github.com/ghodss/yaml"
 )
 

@@ -1,14 +1,16 @@
 package cluster
 
 import (
+	"bufio"
 	"fmt"
 	"os"
 	"os/user"
 	"path/filepath"
+	"strings"
 	"text/template"
 
-	"github.com/Fize/n/pkg/output"
-	"github.com/Fize/n/pkg/utils"
+	"github.com/Hex-Techs/n/pkg/output"
+	"github.com/Hex-Techs/n/pkg/utils"
 )
 
 const workDir = ".n"
@@ -37,7 +39,22 @@ func renderVagrantFile(ncmd *ClusterCommand) {
 
 func handleWorkDir() {
 	if utils.IsExists(homeDir()) {
-		output.Fatalf("%s is alrady exist, please clean it.", homeDir())
+		output.Errorf("%s is alrady exist\n", homeDir())
+		output.Notef("Do you want continue? (yes/no) ")
+		reader := bufio.NewReader(os.Stdin)
+		cmdStr, err := reader.ReadString('\n')
+		if err != nil {
+			output.Fatalln(err)
+		}
+		choose := strings.ToLower(cmdStr)
+		if choose == "yes\n" || choose == "y\n" || choose == "\n" {
+			output.Progressln("Continue Progress...")
+			return
+		} else if choose == "no\n" || choose == "n\n" {
+			os.Exit(0)
+		} else {
+			output.Fatalln("unknow option")
+		}
 	}
 	if err := os.Mkdir(homeDir(), os.ModePerm); err != nil {
 		output.Fatalln(err)

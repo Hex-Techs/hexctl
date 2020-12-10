@@ -1,9 +1,10 @@
 package cluster
 
 const (
-	defaultKubeVersion   = "1.17.4"
-	defaultDockerVersion = "18.09.9-3.el7"
-	VagrantFileTmpl      = `$script = <<-SCRIPT
+	defaultKubeVersion       = "1.19.4-0"
+	defaultDockerVersion     = "19.03.14-3.el7"
+	defaultKubernetesVersion = "v1.19.4"
+	VagrantFileTmpl          = `$script = <<-SCRIPT
 sudo setenforce 0
 sudo sed -i 's/SELINUX=enforcing/SELINUX=disabled/g' /etc/selinux/config
 SCRIPT
@@ -72,6 +73,4 @@ net.ipv4.neigh.default.gc_thresh3 = 100000`
 	"storage-driver": "overlay2",
 	"storage-opts":["overlay2.override_kernel_check=true"]
 }`
-	gitee  = "https://gitee.com/malzahar/nn/raw/master/kube-flannel.yml"
-	github = "https://raw.githubusercontent.com/Fize/n/master/kube-flannel.yml"
 )

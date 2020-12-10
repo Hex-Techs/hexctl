@@ -16,8 +16,8 @@ limitations under the License.
 package cmd
 
 import (
-	"github.com/Fize/n/pkg/cluster"
-	"github.com/Fize/n/pkg/output"
+	"github.com/Hex-Techs/n/pkg/cluster"
+	"github.com/Hex-Techs/n/pkg/output"
 	"github.com/spf13/cobra"
 )
 
@@ -43,7 +43,7 @@ var newCmd = &cobra.Command{
 				output.Fatalln("too many args get, must given one local or remote")
 			}
 		} else {
-			// 默认是local
+			// default local
 			args = []string{"local"}
 		}
 		if args[0] == "local" {
@@ -101,7 +101,7 @@ var destroyCmd = &cobra.Command{
 var clusterCommand cluster.ClusterCommand
 
 func init() {
-	newCmd.Flags().StringVarP(&clusterCommand.PodCIDR, "pod-network-cidr", "", "10.244.0.0/16", "Specify range of IP addresses for the pod network. If set, the control plane will automatically allocate CIDRs for every node. (default 10.96.0.0/12).")
+	newCmd.Flags().StringVarP(&clusterCommand.PodCIDR, "pod-network-cidr", "", "10.244.0.0/16", "Specify range of IP addresses for the pod network. If set, the control plane will automatically allocate CIDRs for every node. (default 10.244.0.0/16).")
 	newCmd.Flags().StringVarP(&clusterCommand.ServiceCIDR, "service-cidr", "", "10.96.0.0/12", "Use alternative range of IP address for service VIPs. (default 10.96.0.0/12).")
 	newCmd.Flags().StringVarP(&clusterCommand.ServicePortRange, "service-port-range", "", "", "Specifies the range of node ports that the service can use.")
 	newCmd.Flags().BoolVarP(&clusterCommand.CN, "cn", "", true, "set whether it is a cluster in gfw.")
