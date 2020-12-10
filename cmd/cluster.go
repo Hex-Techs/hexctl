@@ -16,8 +16,8 @@ limitations under the License.
 package cmd
 
 import (
-	"github.com/Hex-Techs/n/pkg/cluster"
-	"github.com/Hex-Techs/n/pkg/output"
+	"github.com/Hex-Techs/hexctl/pkg/cluster"
+	"github.com/Hex-Techs/hexctl/pkg/output"
 	"github.com/spf13/cobra"
 )
 

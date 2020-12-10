@@ -1,4 +1,4 @@
-module github.com/Hex-Techs/n
+module github.com/Hex-Techs/hexctl
 
 go 1.14
 

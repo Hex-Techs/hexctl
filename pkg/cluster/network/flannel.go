@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"text/template"
 
-	"github.com/Hex-Techs/n/pkg/output"
+	"github.com/Hex-Techs/hexctl/pkg/output"
 )
 
 // flannel network cni yaml and template

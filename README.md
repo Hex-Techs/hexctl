@@ -1,4 +1,4 @@
-# n
+# hexctl
 
 A collection of tools used in development
 
@@ -11,7 +11,7 @@ make clean
 
 ## Usage
 ```
-./n --help
+./hexctl --help
 ```
 
 ## Child Command
@@ -20,5 +20,5 @@ make clean
 - **help:** Help about any command
 - **kc:** manage your kubeconfig and context
 - **run:** run a go project
-- **version:** n version
+- **version:** hexctl version
 

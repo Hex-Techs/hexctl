@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/Hex-Techs/n/pkg/output"
-	"github.com/Hex-Techs/n/pkg/utils"
+	"github.com/Hex-Techs/hexctl/pkg/output"
+	"github.com/Hex-Techs/hexctl/pkg/utils"
 	"golang.org/x/crypto/ssh/terminal"
 )
 

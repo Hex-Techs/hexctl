@@ -21,9 +21,9 @@ import (
 	"path/filepath"
 	"syscall"
 
-	"github.com/Hex-Techs/n/pkg/output"
+	"github.com/Hex-Techs/hexctl/pkg/output"
 
-	"github.com/Hex-Techs/n/pkg/run"
+	"github.com/Hex-Techs/hexctl/pkg/run"
 	"github.com/spf13/cobra"
 )
 

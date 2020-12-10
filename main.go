@@ -16,7 +16,7 @@ limitations under the License.
 package main
 
 import (
-	"github.com/Hex-Techs/n/cmd"
+	"github.com/Hex-Techs/hexctl/cmd"
 )
 
 func main() {

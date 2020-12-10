@@ -4,7 +4,7 @@ import (
 	"io/ioutil"
 	"os"
 
-	"github.com/Hex-Techs/n/pkg/output"
+	"github.com/Hex-Techs/hexctl/pkg/output"
 )
 
 func Read(file string) string {

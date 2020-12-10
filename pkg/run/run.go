@@ -7,7 +7,7 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/Hex-Techs/n/pkg/output"
+	"github.com/Hex-Techs/hexctl/pkg/output"
 )
 
 var (

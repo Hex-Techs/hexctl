@@ -16,7 +16,7 @@ limitations under the License.
 package cmd
 
 import (
-	"github.com/Hex-Techs/n/pkg/kc"
+	"github.com/Hex-Techs/hexctl/pkg/kc"
 	"github.com/spf13/cobra"
 )
 

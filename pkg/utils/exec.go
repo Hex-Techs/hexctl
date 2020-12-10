@@ -4,7 +4,7 @@ import (
 	"os"
 	"os/exec"
 
-	"github.com/Hex-Techs/n/pkg/output"
+	"github.com/Hex-Techs/hexctl/pkg/output"
 )
 
 func RunCommand(args string) {
