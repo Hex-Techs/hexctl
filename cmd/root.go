@@ -28,9 +28,9 @@ import (
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
-	Use:   "n",
+	Use:   "hexctl",
 	Short: "nenly command line",
-	Long: `n is a CLI for ops that manage infra.
+	Long: `hexctl is a CLI for ops that manage infra.
 This application is a tool to manage yourself infra
 includ kubernetes cluster, kube config, code project.`,
 }
