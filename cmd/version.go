@@ -49,12 +49,6 @@ var versionCmd = &cobra.Command{
 	},
 }
 
-// var needs to be used instead of const for ldflags
-var (
-	crdVersion        = "unknown"
-	kubernetesVersion = "unknown"
-)
-
 func init() {
 	rootCmd.AddCommand(versionCmd)
 }

@@ -12,9 +12,6 @@ build/_test
 .DS_Store
 *.tgz
 **/.DS_Store*
-# Created by https://www.gitignore.io/api/go,vim,emacs,visualstudiocode
-### Emacs ###
-# -*- mode: gitignore; -*-
 *~
 \#*\#
 /.emacs.desktop
@@ -87,7 +84,8 @@ tags
 .history
 # End of https://www.gitignore.io/api/go,vim,emacs,visualstudiocode
 vendor/
-.vscode/`
+.vscode/
+bin/`
 
 	DockerIgnoreTemp = `.idea/
 deploy/
@@ -95,5 +93,6 @@ vendor/
 Makefile
 README.md
 Dockerfile
-hack/`
+hack/
+bin/`
 )
