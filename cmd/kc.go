@@ -16,6 +16,9 @@ limitations under the License.
 package cmd
 
 import (
+	"os"
+
+	"github.com/Hex-Techs/hexctl/pkg/display"
 	"github.com/Hex-Techs/hexctl/pkg/kc"
 	"github.com/spf13/cobra"
 )
@@ -37,7 +40,7 @@ var switchCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) != 0 {
 			cmd.Help()
-			return
+			os.Exit(1)
 		}
 		kc.Switch(kubeconfig)
 	},
@@ -49,9 +52,26 @@ var showCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) != 0 {
 			cmd.Help()
-			return
+			os.Exit(1)
 		}
 		kc.Show(kubeconfig)
+	},
+}
+
+var nsCmd = &cobra.Command{
+	Use:   "ns",
+	Short: "switch your current kube context default namespace",
+	Run: func(cmd *cobra.Command, args []string) {
+		var ns string
+		if len(args) == 1 {
+			ns = args[0]
+		} else if len(args) == 0 {
+			ns = "defalut"
+		} else {
+			display.Errorln("error: you must give a namespace by the current context cluster")
+			os.Exit(1)
+		}
+		kc.Namespace(kubeconfig, ns)
 	},
 }
 
@@ -61,7 +81,7 @@ var mergeCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) != 0 {
 			cmd.Help()
-			return
+			os.Exit(1)
 		}
 		kc.Merge(src, kubeconfig)
 	},
@@ -71,12 +91,14 @@ func init() {
 	kcCmd.Flags().StringVarP(&kubeconfig, "kubeconfig", "", "", "Specify the kubeconfig file to modify, default ~/.kube/config")
 	switchCmd.Flags().StringVarP(&kubeconfig, "kubeconfig", "", "", "Specify the kubeconfig file to modify, default ~/.kube/config")
 	mergeCmd.Flags().StringVarP(&kubeconfig, "kubeconfig", "", "", "Specify the kubeconfig file to modify, default ~/.kube/config")
+	nsCmd.Flags().StringVarP(&kubeconfig, "kubeconfig", "", "", "Specify the kubeconfig file to modify, default ~/.kube/config")
 	mergeCmd.Flags().StringVarP(&src, "src", "s", "", "Specify the kubeconfig file to merge (required)")
 
 	mergeCmd.MarkFlagRequired("src")
 
 	kcCmd.AddCommand(switchCmd)
 	kcCmd.AddCommand(showCmd)
+	kcCmd.AddCommand(nsCmd)
 	kcCmd.AddCommand(mergeCmd)
 	rootCmd.AddCommand(kcCmd)
 }

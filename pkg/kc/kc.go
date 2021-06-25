@@ -8,6 +8,7 @@ import (
 	"os/user"
 	"time"
 
+	"github.com/Hex-Techs/hexctl/pkg/common/exec"
 	"github.com/Hex-Techs/hexctl/pkg/common/file"
 	"github.com/Hex-Techs/hexctl/pkg/display"
 	"github.com/ghodss/yaml"
@@ -37,6 +38,14 @@ func Show(kubeconfig string) {
 	d := defaultKubeConfig(kubeconfig)
 	cfg := getContent(d)
 	display.Successf("the current context is: [ %s ]\n", cfg.CurrentContext)
+}
+
+// Namespace switch default work namespace
+func Namespace(kubeconfig, namespace string) {
+	d := defaultKubeConfig(kubeconfig)
+	// use kubectl switch work namespace
+	cmd := fmt.Sprintf("kubectl config set-context --kubeconfig %s --current --namespace %s", d, namespace)
+	exec.RunCommand(cmd)
 }
 
 // Merge merge kubeconfig
