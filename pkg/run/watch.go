@@ -7,7 +7,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Hex-Techs/hexctl/pkg/output"
+	"github.com/Hex-Techs/hexctl/pkg/display"
 	"github.com/fsnotify/fsnotify"
 )
 
@@ -26,7 +26,7 @@ var (
 func NewWatcher(paths []string, stop chan bool) {
 	watcher, err := fsnotify.NewWatcher()
 	if err != nil {
-		output.Fatalln("Failed to create watcher:", err)
+		display.Errorln("Failed to create watcher:", err)
 	}
 	defer watcher.Close()
 	done := make(chan bool)
@@ -51,24 +51,24 @@ func NewWatcher(paths []string, stop chan bool) {
 						continue
 					}
 					stop <- true
-					output.Noteln("Reload Progess...")
+					display.Errorln("Reload Progess...")
 				}
 				eventTime[e.Name] = mt
 			case err, ok := <-watcher.Errors:
 				if !ok {
 					return
 				}
-				output.Errorln("Watcher error:", err) // No need to exit here
+				display.Errorln("Watcher error:", err) // No need to exit here
 			}
 		}
 	}()
 
-	output.Notef("Initializing Watcher...\n")
+	display.Infoln("Initializing Watcher...\n")
 	for _, path := range paths {
-		// output.Noteln("Watching: ", path)
+		// display.Noteln("Watching: ", path)
 		err = watcher.Add(path)
 		if err != nil {
-			output.Fatalln("Failed to watch directory:", err)
+			display.Errorln("Failed to watch directory:", err)
 		}
 	}
 	<-done
@@ -80,7 +80,7 @@ func shouldIgnoreFile(filename string) bool {
 	for _, regex := range ignoredFilesRegExps {
 		r, err := regexp.Compile(regex)
 		if err != nil {
-			output.Fatalln("Could not compile regular expression:", err)
+			display.Errorln("Could not compile regular expression:", err)
 		}
 		if r.MatchString(filename) {
 			return true
@@ -105,14 +105,14 @@ func getFileModTime(path string) int64 {
 	path = strings.Replace(path, "\\", "/", -1)
 	f, err := os.Open(path)
 	if err != nil {
-		output.Errorf("Failed to open file on '%s': %s", path, err)
+		display.Errorf("Failed to open file on '%s': %s", path, err)
 		return time.Now().Unix()
 	}
 	defer f.Close()
 
 	fi, err := f.Stat()
 	if err != nil {
-		output.Errorf("Failed to get file stats: %s", err)
+		display.Errorf("Failed to get file stats: %s", err)
 		return time.Now().Unix()
 	}
 

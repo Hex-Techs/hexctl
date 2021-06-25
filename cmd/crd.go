@@ -14,7 +14,7 @@ var crdCmd = &cobra.Command{
 
 Provides libraries and tools to create new projects, APIs and controllers.
 Includes tools for packaging artifacts into an installer container.
-	
+
 Typical project lifecycle:
 
 - initialize a project:
@@ -47,7 +47,7 @@ var initCmd = &cobra.Command{
 var createCmd = &cobra.Command{
 	Use:   "create",
 	Short: "Scaffold a Kubernetes API",
-	Example: `	# Create a Foos API with Group: foo, Version: v1alpha1 and Kind: Foo 
+	Example: `	# Create a Foos API with Group: foo, Version: v1alpha1 and Kind: Foo
 	- hexctl crd create api --group foo --version v1alpha1 --kind Foo`,
 	Run: func(cmd *cobra.Command, args []string) {
 		cmd.Help()

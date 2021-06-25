@@ -18,7 +18,7 @@ package cmd
 import (
 	"runtime"
 
-	"github.com/Hex-Techs/hexctl/pkg/output"
+	"github.com/Hex-Techs/hexctl/pkg/display"
 	"github.com/spf13/cobra"
 )
 
@@ -30,7 +30,7 @@ import (
 // \/       \/      \/            \/     \/     \/
 
 const (
-	version = "v0.1"
+	version = "v0.1.2"
 	Logo    = `  ___ ___                ___________           .__
  /   |   \   ____ ___  __\__    ___/___   ____ |  |__
 /    ~    \_/ __ \\  \/  / |    |_/ __ \_/ ___\|  |  \
@@ -45,7 +45,7 @@ var versionCmd = &cobra.Command{
 	Short: "hexctl version",
 	Long:  `show hexctl version.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		output.Progressf("%s %s %s/%s\n", Logo, version, runtime.GOOS, runtime.GOARCH)
+		display.Infof("%s\n%s\n%s/%s\n", Logo, version, runtime.GOOS, runtime.GOARCH)
 	},
 }
 

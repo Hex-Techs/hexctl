@@ -21,8 +21,7 @@ import (
 	"path/filepath"
 	"syscall"
 
-	"github.com/Hex-Techs/hexctl/pkg/output"
-
+	"github.com/Hex-Techs/hexctl/pkg/display"
 	"github.com/Hex-Techs/hexctl/pkg/run"
 	"github.com/spf13/cobra"
 )
@@ -36,7 +35,7 @@ var runCmd = &cobra.Command{
 Gin or other web project, it will watch *.go file and when these file changed n will reload it,
 you must have a main.go file in workdir and code in the directory named pkg.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		output.Progressf(`
+		display.Infof(`
 %s
 
 `, Logo)
@@ -45,9 +44,7 @@ you must have a main.go file in workdir and code in the directory named pkg.`,
 		pkgs, err := run.GetDirList(filepath.Join(pwd, "pkg"))
 		cmds, err := run.GetDirList(filepath.Join(pwd, "cmd"))
 		dirs := append(pkgs, cmds...)
-		if err != nil {
-			output.Fatalln(err)
-		}
+		cobra.CheckErr(err)
 		go run.NewWatcher(dirs, stop)
 		go run.Reload(command, stop)
 		sigs := make(chan os.Signal, 1)

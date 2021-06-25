@@ -1,3 +1,4 @@
+// Package run debug go process
 package run
 
 import (
@@ -7,7 +8,7 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/Hex-Techs/hexctl/pkg/output"
+	"github.com/Hex-Techs/hexctl/pkg/display"
 )
 
 var (
@@ -29,10 +30,11 @@ func Reload(command []string, stop chan bool) {
 	}
 }
 
+// Kill kill a go process
 func Kill() {
 	pgid, err := syscall.Getpgid(cmd.Process.Pid)
 	if err != nil {
-		output.Errorln("kill process with error:", err)
+		display.Errorln("kill process with error:", err)
 	} else {
 		syscall.Kill(-pgid, 15) // note the minus sign
 	}
@@ -46,6 +48,6 @@ func start(command []string) {
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	if err := cmd.Start(); err != nil {
-		output.Fatalln("run process with error:", err)
+		display.Errorln("run process with error:", err)
 	}
 }
