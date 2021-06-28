@@ -36,8 +36,8 @@ func Switch(kubeconfig string) {
 // Show show the context
 func Show(kubeconfig string) {
 	d := defaultKubeConfig(kubeconfig)
-	cfg := getContent(d)
-	display.Successf("the current context is: [ %s ]\n", cfg.CurrentContext)
+	cmd := fmt.Sprintf("kubectl config current-context --kubeconfig %s", d)
+	exec.RunCommand(cmd)
 }
 
 // Namespace switch default work namespace
