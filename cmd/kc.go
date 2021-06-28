@@ -28,10 +28,16 @@ var src string
 
 // kcCmd represents the kc command
 var kcCmd = &cobra.Command{
-	Use:   "kc",
-	Short: "manage your kubeconfig and context",
+	Use:              "kc",
+	TraverseChildren: true,
+	Short:            "manage your kubeconfig and context",
 	Long: `kc helps you manage kubeconfig files and contexts,
-it will switch context or show current context.`,
+it will switch context or show current context.
+
+- show current context
+  hexctl kc show
+
+you must have kubectl command already.`,
 }
 
 var switchCmd = &cobra.Command{
@@ -88,11 +94,8 @@ var mergeCmd = &cobra.Command{
 }
 
 func init() {
-	kcCmd.Flags().StringVarP(&kubeconfig, "kubeconfig", "", "", "Specify the kubeconfig file to modify, default ~/.kube/config")
-	switchCmd.Flags().StringVarP(&kubeconfig, "kubeconfig", "", "", "Specify the kubeconfig file to modify, default ~/.kube/config")
-	mergeCmd.Flags().StringVarP(&kubeconfig, "kubeconfig", "", "", "Specify the kubeconfig file to modify, default ~/.kube/config")
-	nsCmd.Flags().StringVarP(&kubeconfig, "kubeconfig", "", "", "Specify the kubeconfig file to modify, default ~/.kube/config")
 	mergeCmd.Flags().StringVarP(&src, "src", "s", "", "Specify the kubeconfig file to merge (required)")
+	kcCmd.PersistentFlags().StringVarP(&kubeconfig, "kubeconfig", "", "", "Specify the kubeconfig file to modify, default ~/.kube/config")
 
 	mergeCmd.MarkFlagRequired("src")
 

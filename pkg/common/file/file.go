@@ -1,6 +1,7 @@
 package file
 
 import (
+	"html/template"
 	"io/ioutil"
 	"os"
 
@@ -39,4 +40,19 @@ func IsDir(name string) bool {
 		return false
 	}
 	return s.IsDir()
+}
+
+// WriteByTemp write a file by given template
+func WriteByTemp(title, content, fileName string, data interface{}) {
+	t := template.New(title)
+	t = template.Must(t.Parse(content))
+	var f *os.File
+	var err error
+	if !IsExists(fileName) {
+		f, err = os.Create(fileName)
+	} else {
+		f, err = os.Open(fileName)
+	}
+	cobra.CheckErr(err)
+	t.Execute(f, data)
 }

@@ -1,25 +1,38 @@
 package cmd
 
 import (
-	"fmt"
-	"runtime"
-
+	"github.com/Hex-Techs/hexctl/pkg/crd"
 	"github.com/spf13/cobra"
 )
 
-var crdCmd = &cobra.Command{
-	Use:   "crd",
-	Short: "crd is a command for building kubernetes extensions and tools",
-	Long: `Development kit for building Kubernetes extensions and tools.
+type options struct {
+	GVK        *crd.GVK
+	WorkOption *crd.WorkOption
+	Owner      string
+	Repo       string
+}
 
-Provides libraries and tools to create new projects, APIs and controllers.
+var opts = &options{
+	GVK: &crd.GVK{
+		Force: false,
+	},
+	WorkOption: &crd.WorkOption{
+		Options: "",
+	},
+}
+
+var crdCmd = &cobra.Command{
+	Use:              "crd",
+	TraverseChildren: true,
+	Short:            "crd is a command scaffold for kubernetes extensions",
+	Long: `Provides libraries and tools to create new projects, APIs and controllers.
 Includes tools for packaging artifacts into an installer container.
 
 Typical project lifecycle:
 
 - initialize a project:
 
-  hexctl crd init --domain example.com --license apache2 --owner "The Hex-Techs authors"
+  hexctl crd init --domain example.com --owner "The Hex-Techs authors"
 
 - create one or more a new resource APIs and add your code to them:
 
@@ -34,21 +47,18 @@ After the scaffold is written, api will run make on the project.`,
 var initCmd = &cobra.Command{
 	Use:   "init",
 	Short: "init kubernetes extensions project",
-	Example: `	# Init project with license
-	- hexctl crd init --domain example.com --license apache2 --owner "The Hex-Techs authors"
-
-	# Init project without license
-	- hexctl crd init --domain example.com`,
+	Example: `	# Init project
+	- hexctl crd init --domain example.com --owner "The Hex-Techs authors"`,
 	Run: func(cmd *cobra.Command, args []string) {
-		cmd.Help()
+		crd.Init(opts.Owner, opts.Repo, opts.GVK)
 	},
 }
 
-var createCmd = &cobra.Command{
-	Use:   "create",
-	Short: "Scaffold a Kubernetes API",
+var generateCmd = &cobra.Command{
+	Use:   "generate",
+	Short: "Scaffold a Kubernetes extensions api",
 	Example: `	# Create a Foos API with Group: foo, Version: v1alpha1 and Kind: Foo
-	- hexctl crd create api --group foo --version v1alpha1 --kind Foo`,
+	- hexctl crd generate api --group foo --version v1alpha1 --kind Foo`,
 	Run: func(cmd *cobra.Command, args []string) {
 		cmd.Help()
 	},
@@ -58,101 +68,54 @@ var apiCmd = &cobra.Command{
 	Use:   "api",
 	Short: "Scaffold a Kubernetes API",
 	Run: func(cmd *cobra.Command, args []string) {
-		cmd.Help()
+		crd.CreateAPI(opts.GVK)
 	},
 }
 
-var updateCmd = &cobra.Command{
-	Use:   "update",
-	Short: "update kubernetes API clients",
-	Long: `After API changed, must need execute this command.
-This command will update kubernetes API clients.`,
-	Run: func(cmd *cobra.Command, args []string) {
-		cmd.Help()
-	},
-}
+var codeCmd = &cobra.Command{
+	Use:   "code",
+	Short: "Scaffold a Kubernetes code",
+	Long: `Generate necessary scripts and tool files for code generator.
 
-var buildCmd = &cobra.Command{
-	Use:   "build",
-	Short: "build image for the project",
-	Long:  ``,
-	Example: `	#Build image
-	- hexctl crd build examlpe.com/hex-techs/image:v0.0.0`,
-	Run: func(cmd *cobra.Command, args []string) {
-		cmd.Help()
-	},
-}
+Details: https://github.com/kubernetes/code-generator
 
-var pushCmd = &cobra.Command{
-	Use:   "push",
-	Short: "push image to docker harbor",
-	Long:  ``,
-	Example: `	#Push image, it will push image that you made.
-	- hexctl crd push`,
+You can use these tools to generate informer, client, lister, openapi and so on.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		cmd.Help()
-	},
-}
-
-var generateCmd = &cobra.Command{
-	Use:   "generate",
-	Short: "Invokes a specific generator",
-	Long:  ``,
-	Run: func(cmd *cobra.Command, args []string) {
-		cmd.Help()
-	},
-}
-
-var k8sCmd = &cobra.Command{
-	Use:   "k8s",
-	Short: "generate k8s clients whit the API",
-	Long:  ``,
-	Run: func(cmd *cobra.Command, args []string) {
-		cmd.Help()
-	},
-}
-
-var openApiCmd = &cobra.Command{
-	Use:   "openapi",
-	Short: "generate k8s openAPI whit the API",
-	Long:  ``,
-	Run: func(cmd *cobra.Command, args []string) {
-		cmd.Help()
-	},
-}
-
-var crdRunCmd = &cobra.Command{
-	Use:   "run",
-	Short: "Run an custom project in a variety of environments",
-	Long:  ``,
-	Run: func(cmd *cobra.Command, args []string) {
-		cmd.Help()
-	},
-}
-
-// print k8s version, client-go version, crd version，go version, GOOS=darwin GOARCH=amd64
-var crdVersionCmd = &cobra.Command{
-	Use:   "version",
-	Short: "Prints the version of hexctl crd",
-	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Printf("hexctl crd version: %q, kubernetes version: %q, go version: %q, GOOS: %q, GOARCH: %q",
-			crdVersion, kubernetesVersion, runtime.Version(), runtime.GOOS, runtime.GOARCH)
+		crd.Generate(opts.GVK, opts.WorkOption)
 	},
 }
 
 func init() {
-	crdCmd.AddCommand(initCmd)
-	crdCmd.AddCommand(createCmd)
-	crdCmd.AddCommand(updateCmd)
-	crdCmd.AddCommand(buildCmd)
-	crdCmd.AddCommand(pushCmd)
-	crdCmd.AddCommand(generateCmd)
-	crdCmd.AddCommand(crdRunCmd)
-	crdCmd.AddCommand(crdVersionCmd)
+	initCmd.Flags().StringVarP(&opts.GVK.Domain, "domain", "d", "", "domain for groups (default \"my.domain\")")
 
-	createCmd.AddCommand(apiCmd)
-	generateCmd.AddCommand(k8sCmd)
-	generateCmd.AddCommand(openApiCmd)
+	apiCmd.Flags().StringVarP(&opts.GVK.Group, "group", "g", "", "resource group (required)")
+	apiCmd.Flags().StringVarP(&opts.GVK.Version, "version", "v", "", "resouce version (required)")
+	apiCmd.Flags().StringVarP(&opts.GVK.Kind, "kind", "k", "", "resource kind (required)")
+	apiCmd.Flags().BoolVarP(&opts.GVK.Force, "force", "f", false, "attempt to create resource even if it already exists")
+	apiCmd.Flags().BoolVarP(&opts.GVK.UseNamespace, "namespaced", "n", true, "resource is namespaced")
+
+	codeCmd.Flags().StringVarP(&opts.GVK.Group, "group", "g", "", "resource group (required)")
+	codeCmd.Flags().StringVarP(&opts.GVK.Version, "version", "v", "", "resouce version (required)")
+	codeCmd.Flags().StringVarP(&opts.WorkOption.Generated, "generated", "", "", "output package (required)")
+	codeCmd.Flags().StringVarP(&opts.WorkOption.API, "apis", "", "", "apis package (required)")
+
+	crdCmd.PersistentFlags().StringVarP(&opts.Owner, "owner", "", "", "specify the crd owner")
+	crdCmd.PersistentFlags().StringVarP(&opts.Repo, "repo", "", "", "name to use for go module")
+
+	apiCmd.MarkFlagRequired("group")
+	apiCmd.MarkFlagRequired("version")
+	apiCmd.MarkFlagRequired("kind")
+
+	codeCmd.MarkFlagRequired("group")
+	codeCmd.MarkFlagRequired("version")
+	codeCmd.MarkFlagRequired("generated")
+	codeCmd.MarkFlagRequired("apis")
+
+	generateCmd.AddCommand(apiCmd)
+	generateCmd.AddCommand(codeCmd)
+
+	crdCmd.AddCommand(initCmd)
+	crdCmd.AddCommand(generateCmd)
 
 	rootCmd.AddCommand(crdCmd)
 }
