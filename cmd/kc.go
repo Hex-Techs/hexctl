@@ -72,7 +72,7 @@ var nsCmd = &cobra.Command{
 		if len(args) == 1 {
 			ns = args[0]
 		} else if len(args) == 0 {
-			ns = "defalut"
+			ns = "default"
 		} else {
 			display.Errorln("error: you must give a namespace by the current context cluster")
 			os.Exit(1)

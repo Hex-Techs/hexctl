@@ -32,7 +32,7 @@ var runCmd = &cobra.Command{
 	Short: "run a go project",
 	Long: `run a go project. For example:
 
-Gin or other web project, it will watch *.go file and when these file changed n will reload it,
+Gin or other web project, it will watch *.go file and when these file changed hexctl will reload it,
 you must have a main.go file in workdir and code in the directory named pkg.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		display.Infof(`
