@@ -1,7 +1,9 @@
 package file
 
 import (
+	"crypto/sha256"
 	"html/template"
+	"io"
 	"io/ioutil"
 	"os"
 
@@ -25,10 +27,7 @@ func Write(content, dst string) {
 func IsExists(name string) bool {
 	_, err := os.Stat(name)
 	if err != nil {
-		if os.IsExist(err) {
-			return true
-		}
-		return false
+		return os.IsExist(err)
 	}
 	return true
 }
@@ -55,4 +54,16 @@ func WriteByTemp(title, content, fileName string, data interface{}) {
 	}
 	cobra.CheckErr(err)
 	t.Execute(f, data)
+}
+
+func Hash(name string) (string, error) {
+	file, err := os.Open(name)
+	if err != nil {
+		return "", err
+	}
+	hash := sha256.New()
+	if _, err := io.Copy(hash, file); err != nil {
+		return "", err
+	}
+	return string(hash.Sum(nil)), nil
 }

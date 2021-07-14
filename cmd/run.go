@@ -16,11 +16,17 @@ limitations under the License.
 package cmd
 
 import (
+	"fmt"
 	"os"
 	"os/signal"
 	"path/filepath"
+	"regexp"
+	"runtime"
+	"strings"
 	"syscall"
+	"time"
 
+	"github.com/Hex-Techs/hexctl/pkg/common/file"
 	"github.com/Hex-Techs/hexctl/pkg/display"
 	"github.com/Hex-Techs/hexctl/pkg/run"
 	"github.com/spf13/cobra"
@@ -35,28 +41,61 @@ var runCmd = &cobra.Command{
 Gin or other web project, it will watch *.go file and when these file changed hexctl will reload it,
 you must have a main.go file in workdir and code in the directory named pkg.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		display.Infof(`
-%s
-
-`, Logo)
-		stop := make(chan bool)
+		if len(args) != 0 {
+			cobra.CheckErr(fmt.Errorf("unknown args %v", args))
+		}
+		display.Infof("%s %s %s/%s\n", Logo, version, runtime.GOOS, runtime.GOARCH)
 		pwd, _ := os.Getwd()
-		pkgs, err := run.GetDirList(filepath.Join(pwd, "pkg"))
-		cmds, err := run.GetDirList(filepath.Join(pwd, "cmd"))
-		dirs := append(pkgs, cmds...)
+		if !file.IsExists(run.MainFile) {
+			display.Errorln("can not find main.go in", pwd)
+			os.Exit(126)
+		}
+		initWorkDir()
+		stop := make(chan bool)
+		dirs, err := run.GetDirList(filepath.Join(pwd, "."))
+		dirs = handlerDir(dirs)
 		cobra.CheckErr(err)
 		go run.NewWatcher(dirs, stop)
+		time.Sleep(500 * time.Millisecond)
 		go run.Reload(command, stop)
 		sigs := make(chan os.Signal, 1)
 		signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM, os.Interrupt)
-		for {
-			select {
-			case <-sigs:
-				run.Kill()
-				os.Exit(0)
+		for range sigs {
+			run.Kill()
+			os.Exit(0)
+		}
+		// for {
+		// 	select {
+		// 	case <-sigs:
+		// 		run.Kill()
+		// 		os.Exit(0)
+		// 	}
+		// }
+	},
+}
+
+func initWorkDir() {
+	display.Successf("Create work directory %s\n", run.WorkDir)
+	err := os.Mkdir(run.WorkDir, 0755)
+	if err != nil {
+		if !os.IsExist(err) {
+			cobra.CheckErr(err)
+		}
+	}
+}
+
+// handlerDir remove .git and bin directory
+func handlerDir(dir []string) []string {
+	var res []string
+	reg := regexp.MustCompile(`.+/\.`)
+	for _, d := range dir {
+		if !strings.HasSuffix(d, "bin") {
+			if !reg.Match([]byte(d)) {
+				res = append(res, d)
 			}
 		}
-	},
+	}
+	return res
 }
 
 var command []string

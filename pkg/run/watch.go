@@ -51,7 +51,7 @@ func NewWatcher(paths []string, stop chan bool) {
 						continue
 					}
 					stop <- true
-					display.Errorln("Reload Progess...")
+					display.Successln("Reload Progess...")
 				}
 				eventTime[e.Name] = mt
 			case err, ok := <-watcher.Errors:
@@ -63,9 +63,9 @@ func NewWatcher(paths []string, stop chan bool) {
 		}
 	}()
 
-	display.Infoln("Initializing Watcher...\n")
+	display.Successln("Initializing Watcher...")
 	for _, path := range paths {
-		// display.Noteln("Watching: ", path)
+		display.Progressln("Watching: ", path)
 		err = watcher.Add(path)
 		if err != nil {
 			display.Errorln("Failed to watch directory:", err)
