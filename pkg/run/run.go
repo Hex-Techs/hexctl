@@ -20,8 +20,6 @@ const (
 
 var (
 	cmd *exec.Cmd
-	// out    io.Reader
-	// errout io.Reader
 )
 
 // Reload reload a go process
@@ -32,14 +30,6 @@ func Reload(command []string, stop chan bool) {
 		time.Sleep(1 * time.Second)
 		start(command)
 	}
-	// for {
-	// 	select {
-	// 	case <-stop:
-	// 		Kill()
-	// 		time.Sleep(1 * time.Second)
-	// 		start(command)
-	// 	}
-	// }
 }
 
 // Kill kill a go process
@@ -74,6 +64,7 @@ func start(command []string) {
 	cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
+	display.Successln("Running process...")
 	if err := cmd.Start(); err != nil {
 		display.Errorln("run process with error:", err)
 	}
@@ -103,7 +94,7 @@ func build() (string, error) {
 	hash2, err = file.Hash(bin)
 	cobra.CheckErr(err)
 	if hash == hash2 && hash != "" {
-		display.Successln("No change found, the binary is same")
+		display.Successln("No change found in project")
 	}
 
 	return bin, nil
