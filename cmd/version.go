@@ -18,7 +18,7 @@ package cmd
 import (
 	"runtime"
 
-	"github.com/Hex-Techs/hexctl/pkg/display"
+	"github.com/gookit/color"
 	"github.com/spf13/cobra"
 )
 
@@ -45,15 +45,9 @@ var versionCmd = &cobra.Command{
 	Short: "hexctl version",
 	Long:  `show hexctl version.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		display.Infof("%s\n%s\n%s/%s\n", Logo, version, runtime.GOOS, runtime.GOARCH)
+		color.Printf("%s\n%s\n%s/%s\n", Logo, version, runtime.GOOS, runtime.GOARCH)
 	},
 }
-
-// var needs to be used instead of const for ldflags
-var (
-	crdVersion        = "unknown"
-	kubernetesVersion = "unknown"
-)
 
 func init() {
 	rootCmd.AddCommand(versionCmd)

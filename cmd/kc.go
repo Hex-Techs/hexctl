@@ -18,8 +18,8 @@ package cmd
 import (
 	"os"
 
-	"github.com/Hex-Techs/hexctl/pkg/display"
 	"github.com/Hex-Techs/hexctl/pkg/kc"
+	"github.com/gookit/color"
 	"github.com/spf13/cobra"
 )
 
@@ -74,7 +74,7 @@ var nsCmd = &cobra.Command{
 		} else if len(args) == 0 {
 			ns = "default"
 		} else {
-			display.Errorln("error: you must give a namespace by the current context cluster")
+			color.Red.Println("error: you must give a namespace by the current context cluster")
 			os.Exit(1)
 		}
 		kc.Namespace(kubeconfig, ns)

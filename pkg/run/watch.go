@@ -7,8 +7,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Hex-Techs/hexctl/pkg/display"
 	"github.com/fsnotify/fsnotify"
+	"github.com/gookit/color"
 )
 
 var (
@@ -26,7 +26,7 @@ var (
 func NewWatcher(paths []string, stop chan bool) {
 	watcher, err := fsnotify.NewWatcher()
 	if err != nil {
-		display.Errorln("Failed to create watcher:", err)
+		color.Red.Println("Failed to create watcher:", err)
 	}
 	defer watcher.Close()
 	done := make(chan bool)
@@ -51,24 +51,24 @@ func NewWatcher(paths []string, stop chan bool) {
 						continue
 					}
 					stop <- true
-					display.Successln("Reload Progess...")
+					color.Green.Println("Reload Progess...")
 				}
 				eventTime[e.Name] = mt
 			case err, ok := <-watcher.Errors:
 				if !ok {
 					return
 				}
-				display.Errorln("Watcher error:", err) // No need to exit here
+				color.Red.Println("Watcher error:", err) // No need to exit here
 			}
 		}
 	}()
 
-	display.Successln("Initializing Watcher...")
+	color.Green.Println("Initializing Watcher...")
 	for _, path := range paths {
-		display.Progressln("Watching: ", path)
+		color.Yellow.Println("Watching: ", path)
 		err = watcher.Add(path)
 		if err != nil {
-			display.Errorln("Failed to watch directory:", err)
+			color.Red.Println("Failed to watch directory:", err)
 		}
 	}
 	<-done
@@ -80,7 +80,7 @@ func shouldIgnoreFile(filename string) bool {
 	for _, regex := range ignoredFilesRegExps {
 		r, err := regexp.Compile(regex)
 		if err != nil {
-			display.Errorln("Could not compile regular expression:", err)
+			color.Red.Println("Could not compile regular expression:", err)
 		}
 		if r.MatchString(filename) {
 			return true
@@ -105,14 +105,14 @@ func getFileModTime(path string) int64 {
 	path = strings.Replace(path, "\\", "/", -1)
 	f, err := os.Open(path)
 	if err != nil {
-		display.Errorf("Failed to open file on '%s': %s", path, err)
+		color.Red.Printf("Failed to open file on '%s': %s", path, err)
 		return time.Now().Unix()
 	}
 	defer f.Close()
 
 	fi, err := f.Stat()
 	if err != nil {
-		display.Errorf("Failed to get file stats: %s", err)
+		color.Red.Printf("Failed to get file stats: %s", err)
 		return time.Now().Unix()
 	}
 

@@ -8,10 +8,11 @@ import (
 	"os/user"
 	"time"
 
+	"github.com/Hex-Techs/hexctl/pkg/common/display"
 	"github.com/Hex-Techs/hexctl/pkg/common/exec"
 	"github.com/Hex-Techs/hexctl/pkg/common/file"
-	"github.com/Hex-Techs/hexctl/pkg/display"
 	"github.com/ghodss/yaml"
+	"github.com/gookit/color"
 	"github.com/spf13/cobra"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	kyaml "k8s.io/apimachinery/pkg/runtime/serializer/yaml"
@@ -95,16 +96,16 @@ func getContent(kubeconfig string) *KubeConfig {
 	f := file.Read(kubeconfig)
 	cfg := KubeConfig{}
 	obj := &unstructured.Unstructured{}
-
+	var err error
 	dec := kyaml.NewDecodingSerializer(unstructured.UnstructuredJSONScheme)
-	_, _, err := dec.Decode([]byte(f), nil, obj)
+	dec.Decode([]byte(f), nil, obj)
 
 	s := bytes.NewBuffer(nil)
 	enc := json.NewEncoder(s)
 	enc.Encode(obj)
-	err = json.Unmarshal([]byte(s.String()), &cfg)
+	err = json.Unmarshal(s.Bytes(), &cfg)
 	if err != nil {
-		display.Errorln(err)
+		color.Red.Println(err)
 	}
 	return &cfg
 }

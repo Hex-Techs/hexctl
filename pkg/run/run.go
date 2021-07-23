@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"github.com/Hex-Techs/hexctl/pkg/common/file"
-	"github.com/Hex-Techs/hexctl/pkg/display"
+	"github.com/gookit/color"
 	"github.com/spf13/cobra"
 )
 
@@ -41,7 +41,7 @@ func Kill() {
 	}()
 	pgid, err := syscall.Getpgid(cmd.Process.Pid)
 	if err != nil {
-		display.Errorln("kill process with error:", err)
+		color.Red.Println("kill process with error:", err)
 	} else {
 		syscall.Kill(-pgid, 15) // note the minus sign
 	}
@@ -64,14 +64,14 @@ func start(command []string) {
 	cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
-	display.Successln("Running process...")
+	color.Green.Println("Running process...")
 	if err := cmd.Start(); err != nil {
-		display.Errorln("run process with error:", err)
+		color.Red.Println("run process with error:", err)
 	}
 }
 
 func build() (string, error) {
-	display.Successln("Building...")
+	color.Green.Println("Building...")
 	bin := fmt.Sprintf("%s/%s", WorkDir, "_main_")
 	var hash, hash2 string
 	var err error
@@ -84,7 +84,7 @@ func build() (string, error) {
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	if err := cmd.Start(); err != nil {
-		display.Errorln("building with error:", err)
+		color.Red.Println("building with error:", err)
 		return "", nil
 	}
 	err = cmd.Wait()
@@ -94,7 +94,7 @@ func build() (string, error) {
 	hash2, err = file.Hash(bin)
 	cobra.CheckErr(err)
 	if hash == hash2 && hash != "" {
-		display.Successln("No change found in project")
+		color.Green.Println("No change found in project")
 	}
 
 	return bin, nil

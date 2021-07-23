@@ -3,6 +3,7 @@ package display
 import (
 	"strings"
 
+	"github.com/gookit/color"
 	"github.com/manifoldco/promptui"
 	"github.com/spf13/cobra"
 )
@@ -41,7 +42,7 @@ func checkErr(err error) {
 			return
 		}
 		if err.Error() != "^C" {
-			Errorln(err)
+			color.Red.Println(err)
 			cobra.CheckErr(err)
 		}
 	}

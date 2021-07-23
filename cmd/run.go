@@ -27,8 +27,8 @@ import (
 	"time"
 
 	"github.com/Hex-Techs/hexctl/pkg/common/file"
-	"github.com/Hex-Techs/hexctl/pkg/display"
 	"github.com/Hex-Techs/hexctl/pkg/run"
+	"github.com/gookit/color"
 	"github.com/spf13/cobra"
 )
 
@@ -44,10 +44,10 @@ you must have a main.go file in workdir and code in the directory named pkg.`,
 		if len(args) != 0 {
 			cobra.CheckErr(fmt.Errorf("unknown args %v", args))
 		}
-		display.Infof("%s %s %s/%s\n", Logo, version, runtime.GOOS, runtime.GOARCH)
+		color.Printf("%s %s %s/%s\n", Logo, version, runtime.GOOS, runtime.GOARCH)
 		pwd, _ := os.Getwd()
 		if !file.IsExists(run.MainFile) {
-			display.Errorln("can not find main.go in", pwd)
+			color.Red.Println("can not find main.go in", pwd)
 			os.Exit(126)
 		}
 		initWorkDir()
@@ -75,7 +75,7 @@ you must have a main.go file in workdir and code in the directory named pkg.`,
 }
 
 func initWorkDir() {
-	display.Successf("Create work directory %s\n", run.WorkDir)
+	color.Green.Printf("Create work directory %s\n", run.WorkDir)
 	err := os.Mkdir(run.WorkDir, 0755)
 	if err != nil {
 		if !os.IsExist(err) {
