@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"os"
 	"os/user"
 	"time"
 
@@ -13,10 +14,25 @@ import (
 	"github.com/Hex-Techs/hexctl/pkg/common/file"
 	"github.com/ghodss/yaml"
 	"github.com/gookit/color"
+	"github.com/jedib0t/go-pretty/v6/table"
 	"github.com/spf13/cobra"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	kyaml "k8s.io/apimachinery/pkg/runtime/serializer/yaml"
 )
+
+// Ls show the context list
+func Ls(kubeconfig string) {
+	d := defaultKubeConfig(kubeconfig)
+	cfg := getContent(d)
+
+	t := table.NewWriter()
+	t.SetOutputMirror(os.Stdout)
+	t.AppendHeader(table.Row{"Name", "Endpoint"})
+	for _, c := range cfg.Clusters {
+		t.AppendRow([]interface{}{c.Name, c.Cluster.Server})
+	}
+	t.Render()
+}
 
 // Switch switch context for kubeconfig
 func Switch(kubeconfig string) {
@@ -37,8 +53,23 @@ func Switch(kubeconfig string) {
 // Show show the context
 func Show(kubeconfig string) {
 	d := defaultKubeConfig(kubeconfig)
-	cmd := fmt.Sprintf("kubectl config current-context --kubeconfig %s", d)
-	exec.RunCommand(cmd)
+	// cmd := fmt.Sprintf("kubectl config current-context --kubeconfig %s", d)
+	// exec.RunCommand(cmd)
+	cfg := getContent(d)
+	var ns string
+	for _, c := range cfg.Contexts {
+		if c.Name == cfg.CurrentContext {
+			ns = c.Context.Namespace
+		}
+	}
+	if ns == "" {
+		ns = "default"
+	}
+	t := table.NewWriter()
+	t.SetOutputMirror(os.Stdout)
+	t.AppendHeader(table.Row{"Clustr", "Namespace"})
+	t.AppendRow([]interface{}{cfg.CurrentContext, ns})
+	t.Render()
 }
 
 // Namespace switch default work namespace
@@ -59,25 +90,23 @@ func Merge(src, kubeconfig string) {
 	name := fmt.Sprint(time.Now().Unix())
 
 	for index, v := range srcConfig.Contexts {
-		name = fmt.Sprintf("%s%d", name, index)
-		v.Name = name
-
+		v.Name = fmt.Sprintf("%s-%s%d", v.Name, name, index)
 		u := v.Context.AuthInfo
 		c := v.Context.Cluster
 		for _, av := range srcConfig.AuthInfos {
 			if av.Name == u {
-				av.Name = name
+				av.Name = v.Name
 				dstConfig.AuthInfos = append(dstConfig.AuthInfos, av)
 			}
 		}
 		for _, cv := range srcConfig.Clusters {
 			if cv.Name == c {
-				cv.Name = name
+				cv.Name = v.Name
 				dstConfig.Clusters = append(dstConfig.Clusters, cv)
 			}
 		}
-		v.Context.Cluster = name
-		v.Context.AuthInfo = name
+		v.Context.Cluster = v.Name
+		v.Context.AuthInfo = v.Name
 		dstConfig.Contexts = append(dstConfig.Contexts, v)
 	}
 	file.Write(convert(dstConfig), d)

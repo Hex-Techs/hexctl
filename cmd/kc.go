@@ -40,6 +40,18 @@ it will switch context or show current context.
 you must have kubectl command already.`,
 }
 
+var lsCmd = &cobra.Command{
+	Use:   "ls",
+	Short: "list all kube context",
+	Run: func(cmd *cobra.Command, args []string) {
+		if len(args) != 0 {
+			cmd.Help()
+			os.Exit(1)
+		}
+		kc.Ls(kubeconfig)
+	},
+}
+
 var switchCmd = &cobra.Command{
 	Use:   "switch",
 	Short: "switch your kube context",
@@ -99,6 +111,7 @@ func init() {
 
 	mergeCmd.MarkFlagRequired("src")
 
+	kcCmd.AddCommand(lsCmd)
 	kcCmd.AddCommand(switchCmd)
 	kcCmd.AddCommand(showCmd)
 	kcCmd.AddCommand(nsCmd)

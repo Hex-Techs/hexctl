@@ -5,7 +5,9 @@ go 1.14
 require (
 	github.com/fsnotify/fsnotify v1.4.7
 	github.com/ghodss/yaml v1.0.0
-	github.com/gookit/color v1.2.7
+	github.com/gookit/color v1.4.2
+	github.com/jedib0t/go-pretty/v6 v6.2.4 // indirect
+	github.com/json-iterator/go v1.1.11 // indirect
 	github.com/lunixbochs/vtclean v1.0.0 // indirect
 	github.com/manifoldco/promptui v0.7.0
 	github.com/mattn/go-colorable v0.1.7 // indirect
@@ -14,8 +16,7 @@ require (
 	github.com/spf13/cobra v1.0.0
 	github.com/spf13/jwalterweatherman v1.1.0 // indirect
 	github.com/spf13/viper v1.7.0
-	golang.org/x/crypto v0.0.0-20200709230013-948cd5f35899
-	golang.org/x/sys v0.0.0-20200724161237-0e2f3a69832c // indirect
+	golang.org/x/crypto v0.0.0-20201221181555-eec23a3978ad
 	k8s.io/apimachinery v0.18.6
 	k8s.io/client-go v0.18.6
 )
