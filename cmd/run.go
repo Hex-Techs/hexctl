@@ -24,7 +24,6 @@ import (
 	"runtime"
 	"strings"
 	"syscall"
-	"time"
 
 	"github.com/Hex-Techs/hexctl/pkg/common/file"
 	"github.com/Hex-Techs/hexctl/pkg/run"
@@ -55,22 +54,27 @@ you must have a main.go file in workdir and code in the directory named pkg.`,
 		dirs, err := run.GetDirList(filepath.Join(pwd, "."))
 		dirs = handlerDir(dirs)
 		cobra.CheckErr(err)
-		go run.NewWatcher(dirs, stop)
-		time.Sleep(500 * time.Millisecond)
-		go run.Reload(command, stop)
+
+		startChan := make(chan bool)
+		// init watcher
+		p := make(chan string)
+		go func() {
+			for _, v := range dirs {
+				p <- v
+			}
+			startChan <- true
+		}()
+
+		go run.NewWatcher(p, stop)
+
+		// time.Sleep(1000 * time.Millisecond)
+		go run.Reload(command, startChan, stop)
 		sigs := make(chan os.Signal, 1)
 		signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM, os.Interrupt)
 		for range sigs {
 			run.Kill()
 			os.Exit(0)
 		}
-		// for {
-		// 	select {
-		// 	case <-sigs:
-		// 		run.Kill()
-		// 		os.Exit(0)
-		// 	}
-		// }
 	},
 }
 

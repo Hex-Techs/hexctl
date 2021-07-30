@@ -23,7 +23,8 @@ var (
 )
 
 // Reload reload a go process
-func Reload(command []string, stop chan bool) {
+func Reload(command []string, startChan, stop chan bool) {
+	<-startChan
 	start(command)
 	for range stop {
 		Kill()
