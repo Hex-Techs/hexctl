@@ -31,8 +31,7 @@ var kcCmd = &cobra.Command{
 	Use:              "kc",
 	TraverseChildren: true,
 	Short:            "manage your kubeconfig and context",
-	Long: `kc helps you manage kubeconfig files and contexts,
-it will switch context or show current context.
+	Long: `kc helps you manage kubeconfig files and contexts.
 
 - show current context
   hexctl kc show
@@ -76,6 +75,18 @@ var showCmd = &cobra.Command{
 	},
 }
 
+var deleteCmd = &cobra.Command{
+	Use:   "delete",
+	Short: "delete a context from kubeconfig",
+	Run: func(cmd *cobra.Command, args []string) {
+		if len(args) != 0 {
+			cmd.Help()
+			os.Exit(1)
+		}
+		kc.Delete(kubeconfig)
+	},
+}
+
 var nsCmd = &cobra.Command{
 	Use:   "ns",
 	Short: "switch your current kube context default namespace",
@@ -114,6 +125,7 @@ func init() {
 	kcCmd.AddCommand(lsCmd)
 	kcCmd.AddCommand(switchCmd)
 	kcCmd.AddCommand(showCmd)
+	kcCmd.AddCommand(deleteCmd)
 	kcCmd.AddCommand(nsCmd)
 	kcCmd.AddCommand(mergeCmd)
 	rootCmd.AddCommand(kcCmd)

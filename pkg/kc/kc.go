@@ -40,14 +40,12 @@ func Switch(kubeconfig string) {
 	cfg := getContent(d)
 
 	items := []string{}
-	for _, v := range cfg.Clusters {
+	for _, v := range cfg.Contexts {
 		items = append(items, v.Name)
 	}
 	context := display.SelectUI("Select the kubeconfig Context", items)
-	if len(context) != 0 {
-		cfg.CurrentContext = context
-		file.Write(convert(cfg), d)
-	}
+	cfg.CurrentContext = context
+	file.Write(convert(cfg), d)
 }
 
 // Show show the context
@@ -70,6 +68,58 @@ func Show(kubeconfig string) {
 	t.AppendHeader(table.Row{"Clustr", "Namespace"})
 	t.AppendRow([]interface{}{cfg.CurrentContext, ns})
 	t.Render()
+}
+
+// Delete delete a context from kubeconfig
+func Delete(kubeconfig string) {
+	d := defaultKubeConfig(kubeconfig)
+	cfg := getContent(d)
+
+	items := []string{}
+	for _, v := range cfg.Contexts {
+		items = append(items, v.Name)
+	}
+	context := display.SelectUI("Select the kubeconfig Context which do you want delete", items)
+	ctx, nctx := generateDeleteContext(context, cfg.Contexts)
+	u := generateDeleteAuth(ctx.Context.AuthInfo, cfg.AuthInfos)
+	c := generateDeleteCluster(ctx.Context.Cluster, cfg.Clusters)
+	cfg.Contexts = nctx
+	cfg.AuthInfos = u
+	cfg.Clusters = c
+	file.Write(convert(cfg), d)
+}
+
+func generateDeleteContext(name string, cts []Context) (*Context, []Context) {
+	r := cts
+	for k, v := range cts {
+		if v.Name == name {
+			r = append(r[:k], r[k+1:]...)
+			return &v, r
+		}
+	}
+	return nil, cts
+}
+
+func generateDeleteAuth(name string, auth []AuthInfo) []AuthInfo {
+	r := auth
+	for k, v := range auth {
+		if v.Name == name {
+			r = append(r[:k], r[k+1:]...)
+			return r
+		}
+	}
+	return nil
+}
+
+func generateDeleteCluster(name string, cluster []Cluster) []Cluster {
+	r := cluster
+	for k, v := range cluster {
+		if v.Name == name {
+			r = append(r[:k], r[k+1:]...)
+			return r
+		}
+	}
+	return nil
 }
 
 // Namespace switch default work namespace
