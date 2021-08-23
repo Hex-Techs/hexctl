@@ -1,11 +1,14 @@
 all: darwin linux
 .PHONY: all
 
-darwin: main.go
+test:
+		go test -v ./...
+
+darwin: test main.go
 		test -d ./bin || mkdir ./bin
 		CGO_ENABLED=0 GOOS=darwin go build -ldflags "-w -s" -v -o ./bin/hexctl_darwin main.go
 
-linux: main.go
+linux: test main.go
 		test -d ./bin || mkdir ./bin
 		CGO_ENABLED=0 GOOS=linux go build -ldflags "-w -s" -v -o ./bin/hexctl_linux main.go
 
