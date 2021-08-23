@@ -44,6 +44,9 @@ func Switch(kubeconfig string) {
 		items = append(items, v.Name)
 	}
 	context := display.SelectUI("Select the kubeconfig Context", items)
+	if context == "" {
+		return
+	}
 	cfg.CurrentContext = context
 	file.Write(convert(cfg), d)
 }

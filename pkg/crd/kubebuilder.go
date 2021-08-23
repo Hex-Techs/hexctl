@@ -21,3 +21,9 @@ func CreateAPI(gvk *GVK) {
 		gvk.Group, gvk.Version, gvk.Kind, gvk.Force, gvk.UseNamespace)
 	exec.RunCommand(cmd)
 }
+
+func CreateWebhook(gvk *GVK) {
+	cmd := fmt.Sprintf("kubebuilder create webhook --group %s --version %s --kind %s --defaulting",
+		gvk.Group, gvk.Version, gvk.Kind)
+	exec.RunCommand(cmd)
+}
