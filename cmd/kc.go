@@ -16,6 +16,7 @@ limitations under the License.
 package cmd
 
 import (
+	"fmt"
 	"os"
 
 	"github.com/Hex-Techs/hexctl/pkg/kc"
@@ -35,6 +36,9 @@ var kcCmd = &cobra.Command{
 
 - show current context
   hexctl kc show
+
+- get a context kubeconfig
+  hexctl kc get [you_want_get_context_name]
 
 you must have kubectl command already.`,
 }
@@ -116,6 +120,18 @@ var mergeCmd = &cobra.Command{
 	},
 }
 
+var getCmd = &cobra.Command{
+	Use:   "get",
+	Short: "get a context kubeconfig in kubeconfig",
+	Run: func(cmd *cobra.Command, args []string) {
+		if len(args) != 0 {
+			cmd.Help()
+			os.Exit(1)
+		}
+		fmt.Println(kc.GetContext(kubeconfig))
+	},
+}
+
 func init() {
 	mergeCmd.Flags().StringVarP(&src, "src", "s", "", "Specify the kubeconfig file to merge (required)")
 	kcCmd.PersistentFlags().StringVarP(&kubeconfig, "kubeconfig", "", "", "Specify the kubeconfig file to modify, default ~/.kube/config")
@@ -128,5 +144,6 @@ func init() {
 	kcCmd.AddCommand(deleteCmd)
 	kcCmd.AddCommand(nsCmd)
 	kcCmd.AddCommand(mergeCmd)
+	kcCmd.AddCommand(getCmd)
 	rootCmd.AddCommand(kcCmd)
 }
