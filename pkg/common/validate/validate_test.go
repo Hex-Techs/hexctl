@@ -1,50 +1,49 @@
 package validate
 
-import (
-	"testing"
-)
+import "testing"
 
 func TestValidateIP(t *testing.T) {
-	var errs []error
-	ipArr := []string{"192.168.1.2", "aa.bb.cc.dd", "192.168.1.256", "192.168.$.a"}
-	for _, ip := range ipArr {
-		errs = append(errs, ValidateIP(ip))
+	type args struct {
+		ip []string
 	}
-	for i, e := range errs {
-		if i == 0 {
-			if e != nil {
-				t.Error(e)
-				return
+	tests := []struct {
+		name    string
+		args    args
+		wantErr bool
+	}{
+		{name: "", args: args{ip: []string{"192.168.1.2"}}, wantErr: false},
+		{name: "", args: args{ip: []string{"a.b.c.d"}}, wantErr: true},
+		{name: "", args: args{ip: []string{"192.168.1.256"}}, wantErr: true},
+		{name: "", args: args{ip: []string{"192.168.$.a"}}, wantErr: true},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if err := ValidateIP(tt.args.ip...); (err != nil) != tt.wantErr {
+				t.Errorf("ValidateIP() error = %v, wantErr %v", err, tt.wantErr)
 			}
-		} else {
-			if e == nil {
-				t.Errorf("%d is nil", i)
-				return
-			}
-		}
+		})
 	}
 }
 
 func TestValidateURL(t *testing.T) {
-	url1 := "aabbcc"
-	url2 := "http://sdfdf"
-	url3 := "https://"
-	url4 := "https://ab.com"
-	var err error
-	if err = ValidateURL(url1); err == nil {
-		t.Errorf("%s is not a url", url1)
-		return
+	type args struct {
+		urlSlice []string
 	}
-	if err = ValidateURL(url2); err == nil {
-		t.Errorf("%s is not a url", url1)
-		return
+	tests := []struct {
+		name    string
+		args    args
+		wantErr bool
+	}{
+		{name: "", args: args{urlSlice: []string{"aabbcc"}}, wantErr: true},
+		{name: "", args: args{urlSlice: []string{"http://abcde"}}, wantErr: true},
+		{name: "", args: args{urlSlice: []string{"https://"}}, wantErr: true},
+		{name: "", args: args{urlSlice: []string{"https://aa.com"}}, wantErr: false},
 	}
-	if err = ValidateURL(url3); err == nil {
-		t.Errorf("%s is not a url", url1)
-		return
-	}
-	if err = ValidateURL(url4); err != nil {
-		t.Errorf("%s is a url", url1)
-		return
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if err := ValidateURL(tt.args.urlSlice...); (err != nil) != tt.wantErr {
+				t.Errorf("ValidateURL() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
 	}
 }
