@@ -166,7 +166,7 @@ func Merge(src, kubeconfig string) {
 }
 
 // GetContext get a context want
-func GetContext(kubeconfig string) string {
+func GetContext(kubeconfig string) {
 	d := defaultKubeConfig(kubeconfig)
 	cfg := getContent(d)
 
@@ -183,7 +183,7 @@ func GetContext(kubeconfig string) string {
 	get.AuthInfos = []AuthInfo{*u}
 	get.Clusters = []Cluster{*c}
 	get.CurrentContext = ctx.Name
-	return convert(&get)
+	fmt.Println(convert(&get))
 }
 
 func defaultKubeConfig(kubeconfig string) string {

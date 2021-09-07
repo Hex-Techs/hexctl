@@ -16,7 +16,6 @@ limitations under the License.
 package cmd
 
 import (
-	"fmt"
 	"os"
 
 	"github.com/Hex-Techs/hexctl/pkg/kc"
@@ -128,7 +127,7 @@ var getCmd = &cobra.Command{
 			cmd.Help()
 			os.Exit(1)
 		}
-		fmt.Println(kc.GetContext(kubeconfig))
+		kc.GetContext(kubeconfig)
 	},
 }
 
