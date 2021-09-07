@@ -183,6 +183,8 @@ func GetContext(kubeconfig string) {
 	get.AuthInfos = []AuthInfo{*u}
 	get.Clusters = []Cluster{*c}
 	get.CurrentContext = ctx.Name
+	get.APIVersion = "v1"
+	get.Kind = "Config"
 	fmt.Println(convert(&get))
 }
 
