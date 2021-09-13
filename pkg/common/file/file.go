@@ -2,10 +2,10 @@ package file
 
 import (
 	"crypto/sha256"
-	"html/template"
 	"io"
 	"io/ioutil"
 	"os"
+	"text/template"
 
 	"github.com/spf13/cobra"
 )

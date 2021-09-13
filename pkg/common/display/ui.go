@@ -9,8 +9,12 @@ import (
 )
 
 // SelectUI terminal ui for selected
-func SelectUI(title string, items []string) string {
+func SelectUI(title string, size int, items []string) string {
+	if size > 30 {
+		size = 30
+	}
 	prompt := promptui.Select{
+		Size:  size,
 		Label: title,
 		Items: items,
 	}
@@ -25,12 +29,13 @@ func ConfirmUI(title string) bool {
 	prompt := promptui.Prompt{
 		Label:     title,
 		IsConfirm: true,
+		Default:   "N",
 	}
 
 	result, err := prompt.Run()
 	checkErr(err)
 	choose := strings.ToLower(result)
-	if choose == "y" || choose == "Y" || choose == "" {
+	if choose == "y" || choose == "Y" {
 		return true
 	}
 	return false

@@ -13,8 +13,6 @@ make
 ```
 ./hexctl --help
 ```
-
 ## Depend on
 
 - kubectl
-- kubebuilder

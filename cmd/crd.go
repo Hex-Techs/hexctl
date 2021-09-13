@@ -5,21 +5,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-type options struct {
-	GVK        *crd.GVK
-	WorkOption *crd.WorkOption
-	Owner      string
-	Repo       string
-}
-
-var opts = &options{
-	GVK: &crd.GVK{
-		Force: false,
-	},
-	WorkOption: &crd.WorkOption{
-		Options: "",
-	},
-}
+var opts crd.GVK
 
 var crdCmd = &cobra.Command{
 	Use:              "crd",
@@ -32,7 +18,7 @@ Typical project lifecycle:
 
 - initialize a project:
 
-  hexctl crd init --domain example.com --owner "The Hex-Techs authors"
+  hexctl crd init --domain example.com
 
 - create one or more a new resource APIs and add your code to them:
 
@@ -48,9 +34,9 @@ var initCmd = &cobra.Command{
 	Use:   "init",
 	Short: "init kubernetes extensions project",
 	Example: `	# Init project
-	- hexctl crd init --domain example.com --owner "The Hex-Techs authors"`,
+	- hexctl crd init --domain example.com`,
 	Run: func(cmd *cobra.Command, args []string) {
-		crd.Init(opts.Owner, opts.Repo, opts.GVK)
+		crd.Init(&opts)
 	},
 }
 
@@ -68,51 +54,42 @@ var apiCmd = &cobra.Command{
 	Use:   "api",
 	Short: "Scaffold a Kubernetes API",
 	Run: func(cmd *cobra.Command, args []string) {
-		crd.CreateAPI(opts.GVK)
+		crd.CreateAPI(&opts)
 	},
 }
 
-var codeCmd = &cobra.Command{
-	Use:   "code",
-	Short: "Scaffold a Kubernetes code",
-	Long: `Generate necessary scripts and tool files for code generator.
-
-Details: https://github.com/kubernetes/code-generator
-
-You can use these tools to generate informer, client, lister, openapi and so on.`,
+var ctrlCmd = &cobra.Command{
+	Use:   "controller",
+	Short: "Scaffold a Kubernetes CRD controller",
 	Run: func(cmd *cobra.Command, args []string) {
-		crd.Generate(opts.GVK, opts.WorkOption)
+		crd.CreateController(&opts)
 	},
 }
 
 func init() {
-	initCmd.Flags().StringVarP(&opts.GVK.Domain, "domain", "d", "", "domain for groups (default \"my.domain\")")
+	initCmd.Flags().StringVarP(&opts.Domain, "domain", "d", "", "domain for groups (reqquired)")
 
-	apiCmd.Flags().StringVarP(&opts.GVK.Group, "group", "g", "", "resource group (required)")
-	apiCmd.Flags().StringVarP(&opts.GVK.Version, "version", "v", "", "resouce version (required)")
-	apiCmd.Flags().StringVarP(&opts.GVK.Kind, "kind", "k", "", "resource kind (required)")
-	apiCmd.Flags().BoolVarP(&opts.GVK.Force, "force", "f", false, "attempt to create resource even if it already exists")
-	apiCmd.Flags().BoolVarP(&opts.GVK.UseNamespace, "namespaced", "n", true, "resource is namespaced")
+	apiCmd.Flags().StringVarP(&opts.Group, "group", "g", "", "resource group (required)")
+	apiCmd.Flags().StringVarP(&opts.Version, "version", "v", "", "resouce version (required)")
+	apiCmd.Flags().StringVarP(&opts.Kind, "kind", "k", "", "resource kind (required)")
+	apiCmd.Flags().BoolVarP(&opts.Force, "force", "f", false, "attempt to create resource even if it already exists")
+	apiCmd.Flags().BoolVarP(&opts.UseNamespace, "namespaced", "n", true, "resource is namespaced")
+	apiCmd.Flags().BoolVarP(&opts.UseStatus, "status", "s", true, "resource is has status")
 
-	codeCmd.Flags().StringVarP(&opts.GVK.Group, "group", "g", "", "resource group (required)")
-	codeCmd.Flags().StringVarP(&opts.GVK.Version, "version", "v", "", "resouce version (required)")
-	codeCmd.Flags().StringVarP(&opts.WorkOption.Generated, "generated", "", "", "output package (required)")
-	codeCmd.Flags().StringVarP(&opts.WorkOption.API, "apis", "", "", "apis package (required)")
+	ctrlCmd.Flags().StringVarP(&opts.Kind, "kind", "k", "", "resource kind (required)")
+	ctrlCmd.Flags().BoolVarP(&opts.Force, "force", "f", false, "attempt to create resource even if it already exists")
 
-	crdCmd.PersistentFlags().StringVarP(&opts.Owner, "owner", "", "", "specify the crd owner")
 	crdCmd.PersistentFlags().StringVarP(&opts.Repo, "repo", "", "", "name to use for go module")
+
+	initCmd.MarkFlagRequired("domain")
 
 	apiCmd.MarkFlagRequired("group")
 	apiCmd.MarkFlagRequired("version")
 	apiCmd.MarkFlagRequired("kind")
-
-	codeCmd.MarkFlagRequired("group")
-	codeCmd.MarkFlagRequired("version")
-	codeCmd.MarkFlagRequired("generated")
-	codeCmd.MarkFlagRequired("apis")
+	ctrlCmd.MarkFlagRequired("kind")
 
 	generateCmd.AddCommand(apiCmd)
-	generateCmd.AddCommand(codeCmd)
+	generateCmd.AddCommand(ctrlCmd)
 
 	crdCmd.AddCommand(initCmd)
 	crdCmd.AddCommand(generateCmd)

@@ -95,13 +95,12 @@ var nsCmd = &cobra.Command{
 	Short: "switch your current kube context default namespace",
 	Run: func(cmd *cobra.Command, args []string) {
 		var ns string
-		if len(args) == 1 {
-			ns = args[0]
-		} else if len(args) == 0 {
-			ns = "default"
-		} else {
+		if len(args) != 0 && len(args) != 1 {
 			color.Red.Println("error: you must give a namespace by the current context cluster")
 			os.Exit(1)
+		}
+		if len(args) == 1 {
+			ns = args[0]
 		}
 		kc.Namespace(kubeconfig, ns)
 	},
