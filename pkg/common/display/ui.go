@@ -8,15 +8,24 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// SelectUI terminal ui for selected
-func SelectUI(title string, size int, items []string) string {
+// Select terminal ui for selected
+func Select(title string, size int, items []string) string {
 	if size > 30 {
 		size = 30
 	}
+
+	searcher := func(input string, index int) bool {
+		item := items[index]
+		input = strings.Replace(strings.ToLower(input), " ", "", -1)
+
+		return strings.Contains(item, input)
+	}
+
 	prompt := promptui.Select{
-		Size:  size,
-		Label: title,
-		Items: items,
+		Size:     size,
+		Label:    title,
+		Items:    items,
+		Searcher: searcher,
 	}
 
 	_, result, err := prompt.Run()
@@ -24,8 +33,8 @@ func SelectUI(title string, size int, items []string) string {
 	return result
 }
 
-// ConfirmUI terminal ui for confirmed
-func ConfirmUI(title string) bool {
+// Confirm terminal ui for confirmed
+func Confirm(title string) bool {
 	prompt := promptui.Prompt{
 		Label:     title,
 		IsConfirm: true,

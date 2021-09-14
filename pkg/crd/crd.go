@@ -191,7 +191,7 @@ func CreateController(gvk *GVK) {
 			}
 		}
 	}
-	ctrl := display.ConfirmUI("Are you sure to create controller")
+	ctrl := display.Confirm("Are you sure to create controller")
 	if !ctrl {
 		return
 	}

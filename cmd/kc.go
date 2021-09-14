@@ -16,10 +16,10 @@ limitations under the License.
 package cmd
 
 import (
+	"fmt"
 	"os"
 
 	"github.com/Hex-Techs/hexctl/pkg/kc"
-	"github.com/gookit/color"
 	"github.com/spf13/cobra"
 )
 
@@ -96,8 +96,7 @@ var nsCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		var ns string
 		if len(args) != 0 && len(args) != 1 {
-			color.Red.Println("error: you must give a namespace by the current context cluster")
-			os.Exit(1)
+			cobra.CheckErr(fmt.Errorf("you must give a namespace by the current context cluster"))
 		}
 		if len(args) == 1 {
 			ns = args[0]

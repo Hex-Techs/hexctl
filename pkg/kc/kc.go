@@ -51,12 +51,13 @@ func Switch(kubeconfig string) {
 	for _, v := range cfg.Contexts {
 		items = append(items, v.Name)
 	}
-	context := display.SelectUI("Select the kubeconfig Context", len(items), items)
+	context := display.Select("Select the kubeconfig Context", len(items), items)
 	if context == "" {
 		return
 	}
 	cfg.CurrentContext = context
 	file.Write(convert(cfg), d)
+	color.Green.Println("switch context to", context)
 }
 
 // Show show the context
@@ -90,14 +91,20 @@ func Delete(kubeconfig string) {
 	for _, v := range cfg.Contexts {
 		items = append(items, v.Name)
 	}
-	context := display.SelectUI("Select the kubeconfig Context which do you want delete", len(items), items)
-	ctx, nctx := generateContext(context, cfg.Contexts)
-	_, u := generateAuth(ctx.Context.AuthInfo, cfg.AuthInfos)
-	_, c := generateCluster(ctx.Context.Cluster, cfg.Clusters)
-	cfg.Contexts = nctx
-	cfg.AuthInfos = u
-	cfg.Clusters = c
-	file.Write(convert(cfg), d)
+	context := display.Select("Select the kubeconfig Context which do you want delete", len(items), items)
+	if len(context) == 0 {
+		return
+	}
+	if display.Confirm(fmt.Sprintf("Do you want to delete %s", context)) {
+		ctx, nctx := generateContext(context, cfg.Contexts)
+		_, u := generateAuth(ctx.Context.AuthInfo, cfg.AuthInfos)
+		_, c := generateCluster(ctx.Context.Cluster, cfg.Clusters)
+		cfg.Contexts = nctx
+		cfg.AuthInfos = u
+		cfg.Clusters = c
+		file.Write(convert(cfg), d)
+		color.Green.Printf("delete %s success\n", context)
+	}
 }
 
 func generateContext(name string, cts []Context) (*Context, []Context) {
@@ -135,30 +142,31 @@ func generateCluster(name string, cluster []Cluster) (*Cluster, []Cluster) {
 
 // Namespace switch default work namespace
 func Namespace(kubeconfig, namespace string) {
-	if len(namespace) == 0 {
-		namespace = "default"
-	}
+	var ns string
 	d := defaultKubeConfig(kubeconfig)
-
-	config, err := clientcmd.BuildConfigFromFlags("", d)
-	if err != nil {
-		cobra.CheckErr(err)
-	}
-	clientset, err := kubernetes.NewForConfig(config)
-	if err != nil {
-		cobra.CheckErr(err)
-	}
-	nss, err := clientset.CoreV1().Namespaces().List(context.TODO(), metav1.ListOptions{})
-	if err != nil {
-		cobra.CheckErr(err)
-	}
-
-	items := []string{}
-	for _, v := range nss.Items {
-		items = append(items, v.Name)
-	}
-	ns := display.SelectUI("Select the Namespace", len(items), items)
-	if ns == "" {
+	if len(namespace) == 0 {
+		config, err := clientcmd.BuildConfigFromFlags("", d)
+		if err != nil {
+			cobra.CheckErr(err)
+		}
+		clientset, err := kubernetes.NewForConfig(config)
+		if err != nil {
+			cobra.CheckErr(err)
+		}
+		var timeout int64 = 5
+		nss, err := clientset.CoreV1().Namespaces().List(context.TODO(), metav1.ListOptions{TimeoutSeconds: &timeout})
+		if err != nil {
+			cobra.CheckErr(err)
+		}
+		items := []string{}
+		for _, v := range nss.Items {
+			items = append(items, v.Name)
+		}
+		ns = display.Select("Select the Namespace", len(items), items)
+		if len(ns) == 0 {
+			return
+		}
+	} else {
 		ns = namespace
 	}
 	// use kubectl switch work namespace
@@ -207,7 +215,10 @@ func GetContext(kubeconfig string) {
 	for _, v := range cfg.Contexts {
 		items = append(items, v.Name)
 	}
-	context := display.SelectUI("Select the kubeconfig Context which do you want to manifest", len(items), items)
+	context := display.Select("Select the kubeconfig Context which do you want to manifest", len(items), items)
+	if len(context) == 0 {
+		return
+	}
 	ctx, _ := generateContext(context, cfg.Contexts)
 	u, _ := generateAuth(ctx.Context.AuthInfo, cfg.AuthInfos)
 	c, _ := generateCluster(ctx.Context.Cluster, cfg.Clusters)
