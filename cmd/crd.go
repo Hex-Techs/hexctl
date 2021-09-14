@@ -22,7 +22,11 @@ Typical project lifecycle:
 
 - create one or more a new resource APIs and add your code to them:
 
-  hexctl crd create api --group <group> --version <version> --kind <Kind>
+  hexctl crd generate api --group <group> --version <version> --kind <Kind>
+
+- create one or more a new controller for APIs and add your code to them:
+
+  hexctl crd generate controller --kind <Kind>
 
 After the scaffold is written, api will run make on the project.`,
 	Run: func(cmd *cobra.Command, args []string) {
@@ -42,9 +46,7 @@ var initCmd = &cobra.Command{
 
 var generateCmd = &cobra.Command{
 	Use:   "generate",
-	Short: "Scaffold a Kubernetes extensions api",
-	Example: `	# Create a Foos API with Group: foo, Version: v1alpha1 and Kind: Foo
-	- hexctl crd generate api --group foo --version v1alpha1 --kind Foo`,
+	Short: "Scaffold a Kubernetes extensions resource",
 	Run: func(cmd *cobra.Command, args []string) {
 		cmd.Help()
 	},
@@ -53,6 +55,8 @@ var generateCmd = &cobra.Command{
 var apiCmd = &cobra.Command{
 	Use:   "api",
 	Short: "Scaffold a Kubernetes API",
+	Example: `	# Create a Foos API with Group: foo, Version: v1alpha1 and Kind: Foo
+	- hexctl crd generate api --group foo --version v1alpha1 --kind Foo`,
 	Run: func(cmd *cobra.Command, args []string) {
 		crd.CreateAPI(&opts)
 	},
@@ -61,6 +65,8 @@ var apiCmd = &cobra.Command{
 var ctrlCmd = &cobra.Command{
 	Use:   "controller",
 	Short: "Scaffold a Kubernetes CRD controller",
+	Example: `	# Create a Foos API with Group: foo, Version: v1alpha1 and Kind: Foo
+	- hexctl crd generate controller --kind Foo`,
 	Run: func(cmd *cobra.Command, args []string) {
 		crd.CreateController(&opts)
 	},

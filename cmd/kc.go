@@ -33,11 +33,13 @@ var kcCmd = &cobra.Command{
 	Short:            "manage your kubeconfig and context",
 	Long: `kc helps you manage kubeconfig files and contexts.
 
-- show current context
+- show current context:
+
   hexctl kc show
 
-- get a context kubeconfig
-  hexctl kc get [you_want_get_context_name]
+- get a context kubeconfig:
+
+  hexctl kc get
 
 you must have kubectl command already.`,
 }

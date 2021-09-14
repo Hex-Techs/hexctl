@@ -37,8 +37,12 @@ var runCmd = &cobra.Command{
 	Short: "run a go project",
 	Long: `run a go project. For example:
 
-Gin or other web project, it will watch *.go file and when these file changed hexctl will reload it,
-you must have a main.go file in workdir and code in the directory named pkg.`,
+- run app as -> go run main.go -v 4
+
+  hexctl run --cmd "-v,4"
+
+It will watch *.go file and when these file changed hexctl will reload it,
+you must have a main.go file in workdir.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) != 0 {
 			cobra.CheckErr(fmt.Errorf("unknown args %v", args))
