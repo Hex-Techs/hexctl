@@ -11,7 +11,6 @@ import (
 	"time"
 
 	"github.com/Hex-Techs/hexctl/pkg/common/display"
-	"github.com/Hex-Techs/hexctl/pkg/common/exec"
 	"github.com/Hex-Techs/hexctl/pkg/common/file"
 	"github.com/ghodss/yaml"
 	"github.com/gookit/color"
@@ -91,11 +90,11 @@ func Delete(kubeconfig string) {
 	for _, v := range cfg.Contexts {
 		items = append(items, v.Name)
 	}
-	context := display.Select("Select the kubeconfig Context which do you want delete", len(items), items)
+	context := display.Select("Select the kubeconfig Context which do you want to delete", len(items), items)
 	if len(context) == 0 {
 		return
 	}
-	if display.Confirm(fmt.Sprintf("Do you want to delete %s", context)) {
+	if display.Confirm(fmt.Sprintf("Do you want to Delete %s", context)) {
 		ctx, nctx := generateContext(context, cfg.Contexts)
 		_, u := generateAuth(ctx.Context.AuthInfo, cfg.AuthInfos)
 		_, c := generateCluster(ctx.Context.Cluster, cfg.Clusters)
@@ -103,7 +102,7 @@ func Delete(kubeconfig string) {
 		cfg.AuthInfos = u
 		cfg.Clusters = c
 		file.Write(convert(cfg), d)
-		color.Green.Printf("delete %s success\n", context)
+		color.Green.Printf("Delete %s success\n", context)
 	}
 }
 
@@ -169,9 +168,15 @@ func Namespace(kubeconfig, namespace string) {
 	} else {
 		ns = namespace
 	}
+	c := getContent(d)
+	for _, v := range c.Contexts {
+		if v.Name == c.CurrentContext {
+			v.Context.Namespace = ns
+		}
+	}
 	// use kubectl switch work namespace
-	cmd := fmt.Sprintf("kubectl config set-context --kubeconfig %s --current --namespace %s", d, ns)
-	exec.RunCommand(cmd)
+	file.Write(convert(c), d)
+	// use kubectl switch work namespace
 }
 
 // Merge merge kubeconfig
