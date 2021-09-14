@@ -29,8 +29,7 @@ const (
 	makefile   = "Makefile"
 	dockerfile = "Dockerfile"
 	// update_codegen.sh 脚本
-	generators = "client,lister,informer"
-	script     = "update-codegen.sh"
+	script = "update-codegen.sh"
 
 	gitignore    = ".gitignore"
 	dockerignore = ".dockerignore"

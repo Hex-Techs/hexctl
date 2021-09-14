@@ -2,6 +2,10 @@ all: darwin linux
 .PHONY: all
 
 test:
+		gofmt -w .
+		golint ./...
+		gocyclo -avg .
+		go vet ./...
 		go test -v ./...
 
 darwin: test main.go
