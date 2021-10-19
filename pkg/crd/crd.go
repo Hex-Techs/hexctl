@@ -140,6 +140,9 @@ func CreateAPI(gvk *GVK) {
 	}
 	file.WriteByTemp(typesName, templates.Types, typesName, apiResource)
 	// 4
+	if len(pm.API) == 0 {
+		pm.Group = gvk.Group
+	}
 	add := true
 	for i, v := range pm.API {
 		if v.Kind == apiResource.Kind && v.Group == apiResource.Group &&
