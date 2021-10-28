@@ -54,11 +54,9 @@ you must have a main.go file in workdir.`,
 		}
 		initWorkDir()
 		stop := make(chan bool)
-		// dirs, err := run.GetDirList(filepath.Join(pwd, "."))
 		dirs, err := run.GetDirList(".")
 		dirs = handlerDir(dirs)
 		cobra.CheckErr(err)
-
 		startChan := make(chan bool)
 		// init watcher
 		p := make(chan string)
@@ -68,15 +66,13 @@ you must have a main.go file in workdir.`,
 			}
 			startChan <- true
 		}()
-
 		go run.NewWatcher(p, stop)
-
-		// time.Sleep(1000 * time.Millisecond)
 		go run.Reload(command, startChan, stop)
 		sigs := make(chan os.Signal, 1)
 		signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM, os.Interrupt)
 		for range sigs {
 			run.Kill()
+			run.Clean()
 			os.Exit(0)
 		}
 	},

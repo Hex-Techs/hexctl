@@ -98,3 +98,10 @@ func build() (string, error) {
 
 	return bin, nil
 }
+
+// Clean clean the workdir
+func Clean() {
+	if err := os.RemoveAll(WorkDir); err != nil {
+		color.Red.Println("clean with error:", err)
+	}
+}
