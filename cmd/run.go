@@ -19,7 +19,6 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
-	"path/filepath"
 	"regexp"
 	"runtime"
 	"strings"
@@ -55,7 +54,8 @@ you must have a main.go file in workdir.`,
 		}
 		initWorkDir()
 		stop := make(chan bool)
-		dirs, err := run.GetDirList(filepath.Join(pwd, "."))
+		// dirs, err := run.GetDirList(filepath.Join(pwd, "."))
+		dirs, err := run.GetDirList(".")
 		dirs = handlerDir(dirs)
 		cobra.CheckErr(err)
 
@@ -97,7 +97,8 @@ func handlerDir(dir []string) []string {
 	var res []string
 	reg := regexp.MustCompile(`.+/\.`)
 	for _, d := range dir {
-		if !strings.HasSuffix(d, "bin") {
+		if !strings.HasPrefix(d, "bin") && !strings.HasPrefix(d, "vendor") &&
+			!strings.HasPrefix(d, ".git") && !strings.HasPrefix(d, run.WorkDir) {
 			if !reg.Match([]byte(d)) {
 				res = append(res, d)
 			}
@@ -111,14 +112,4 @@ var command []string
 func init() {
 	runCmd.Flags().StringSliceVarP(&command, "cmd", "", []string{}, "app command")
 	rootCmd.AddCommand(runCmd)
-
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// runCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// runCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }

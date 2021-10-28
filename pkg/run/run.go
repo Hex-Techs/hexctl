@@ -35,25 +35,15 @@ func Reload(command []string, startChan, stop chan bool) {
 
 // Kill kill a go process
 func Kill() {
-	defer func() {
-		if err := recover(); err != nil {
-			return
-		}
-	}()
-	pgid, err := syscall.Getpgid(cmd.Process.Pid)
+	pid := cmd.Process.Pid
+	err := syscall.Kill(-pid, 15)
 	if err != nil {
 		color.Red.Println("kill process with error:", err)
-	} else {
-		syscall.Kill(-pgid, 15) // note the minus sign
-	}
-
-	// 粗暴的判断10次 pid 是否还存在
-	for i := 0; i < 10; i++ {
-		if err = syscall.Kill(pgid, 0); err != nil {
-			return
+		if cmd.ProcessState != nil && !cmd.ProcessState.Exited() {
+			os.Exit(1)
 		}
-		time.Sleep(1 * time.Second)
 	}
+	cmd.Process.Wait()
 }
 
 func start(command []string) {
