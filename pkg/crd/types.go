@@ -41,4 +41,5 @@ type API struct {
 	Group      string `yaml:"group,omitempty"`
 	Domain     string `yaml:"domain,omitempty"`
 	Controller bool   `yaml:"controller,omitempty"`
+	Webhook    bool   `yaml:"webhook,omitempty"`
 }

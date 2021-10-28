@@ -37,6 +37,7 @@ const (
 	// 目录
 	api           = "api"
 	pkg           = "pkg"
+	webhookDir    = "webhook"
 	cmd           = "cmd"
 	controllerDir = "controller"
 	signalsDir    = "signals"
@@ -161,7 +162,51 @@ func CreateAPI(gvk *GVK) {
 }
 
 // CreateWebhook 创建 webhook
+// 0.判断 webhook 目录，创建目录
+// 1.创建 webhook 脚手架
 func CreateWebhook(gvk *GVK) {
+	pm := getProject()
+	gvk.Repo = pm.Repo
+	gvk.Domain = pm.Domain
+	gvk.Group = pm.Group
+	for i, v := range pm.API {
+		if v.Group == gvk.Group && v.Kind == gvk.Kind {
+			gvk.Version = v.Version
+			gvk.UseNamespace = v.Namespaced
+			gvk.UseStatus = v.Status
+			pm.API[i].Webhook = true
+		} else {
+			// 如果在 PROJECT 配置中没找到 kind 则要求先创建 API 并进行相应的 update-codegen
+			if i == (len(pm.API)-1) && gvk.Kind != v.Kind {
+				cobra.CheckErr(fmt.Errorf("not found this kind %s in this project, you can use generate api to create a API first and generate code", gvk.Kind))
+			}
+		}
+	}
+	if !display.Confirm("Are you sure to create webhook") {
+		return
+	}
+	hookDir := filepath.Join(pkg, webhookDir)
+	cwd := filepath.Join(hookDir, strings.ToLower(gvk.Kind))
+	f := filepath.Join(cwd, fmt.Sprintf("%s_webhook.go", strings.ToLower(gvk.Kind)))
+	if file.IsExists(f) && !gvk.Force {
+		cobra.CheckErr("the webhook is already exist")
+	}
+	if !file.IsDir(pkg) {
+		if err := os.Mkdir(pkg, 0755); err != nil {
+			cobra.CheckErr(err)
+		}
+	}
+	if !file.IsDir(hookDir) {
+		if err := os.Mkdir(hookDir, 0755); err != nil {
+			cobra.CheckErr(err)
+		}
+	}
+	if !file.IsDir(cwd) {
+		if err := os.Mkdir(cwd, 0755); err != nil {
+			cobra.CheckErr(err)
+		}
+	}
+	generateSignalsFile()
 }
 
 // 创建 controller
@@ -200,7 +245,7 @@ func CreateController(gvk *GVK) {
 	f := filepath.Join(cwd, fmt.Sprintf("%s_controller.go", strings.ToLower(gvk.Kind)))
 	if file.IsExists(f) && !gvk.Force {
 		// 如果 controler 已存在且没有强制覆盖，则退出
-		cobra.CheckErr(fmt.Errorf("the controller is already exist"))
+		cobra.CheckErr("the controller is already exist")
 	}
 	if !file.IsDir(pkg) {
 		if err := os.Mkdir(pkg, 0755); err != nil {

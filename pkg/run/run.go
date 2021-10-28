@@ -46,6 +46,14 @@ func Kill() {
 	} else {
 		syscall.Kill(-pgid, 15) // note the minus sign
 	}
+
+	// 粗暴的判断10次 pid 是否还存在
+	for i := 0; i < 10; i++ {
+		if err = syscall.Kill(pgid, 0); err != nil {
+			return
+		}
+		time.Sleep(1 * time.Second)
+	}
 }
 
 func start(command []string) {
