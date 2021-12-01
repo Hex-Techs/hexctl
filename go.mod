@@ -3,6 +3,7 @@ module github.com/Hex-Techs/hexctl
 go 1.14
 
 require (
+	github.com/creack/pty v1.1.17 // indirect
 	github.com/fsnotify/fsnotify v1.4.7
 	github.com/ghodss/yaml v1.0.0
 	github.com/gookit/color v1.4.2

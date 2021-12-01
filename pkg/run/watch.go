@@ -24,7 +24,7 @@ var (
 )
 
 // NewWatcher starts an fsnotify Watcher on the specified paths
-func NewWatcher(pathchan chan string, stop chan bool) {
+func NewWatcher(pathchan chan string, stop chan int64) {
 	watcher, err := fsnotify.NewWatcher()
 	if err != nil {
 		color.Red.Println("Failed to create watcher:", err)
@@ -59,8 +59,7 @@ func NewWatcher(pathchan chan string, stop chan bool) {
 					if mt == eventTime[e.Name] {
 						continue
 					}
-					stop <- true
-					color.Green.Println("Reload Progess...")
+					stop <- mt
 				}
 				eventTime[e.Name] = mt
 			case err, ok := <-watcher.Errors:
@@ -123,10 +122,10 @@ func getFileModTime(path string) int64 {
 	fi, err := f.Stat()
 	if err != nil {
 		color.Red.Printf("Failed to get file stats: %s", err)
-		return time.Now().Unix()
+		return time.Now().UnixMilli()
 	}
 
-	return fi.ModTime().Unix()
+	return fi.ModTime().UnixMilli()
 }
 
 // GetDirList get a list of dir

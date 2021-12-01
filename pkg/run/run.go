@@ -19,24 +19,43 @@ const (
 )
 
 var (
-	cmd *exec.Cmd
+	cmd     *exec.Cmd
+	history []int64
 )
 
 // Reload reload a go process
-func Reload(command []string, startChan, stop chan bool) {
+func Reload(command []string, startChan chan bool, stop chan int64) {
 	<-startChan
 	start(command)
-	for range stop {
-		Kill()
-		time.Sleep(1 * time.Second)
-		start(command)
+	restart := true
+	for mt := range stop {
+		if len(history) == 2 {
+			history[0], history[1] = history[1], mt
+			ratelimit := history[1] - history[0]
+			if ratelimit < 500 {
+				restart = false
+			} else {
+				restart = true
+			}
+		}
+		if len(history) == 0 || len(history) == 1 {
+			history = append(history, mt)
+			restart = true
+		}
+		if restart {
+			color.Green.Println("Reload Progess...")
+			restart = false
+			Kill()
+			time.Sleep(1 * time.Second)
+			start(command)
+		}
 	}
 }
 
 // Kill kill a go process
 func Kill() {
 	pid := cmd.Process.Pid
-	err := syscall.Kill(-pid, 15)
+	err := syscall.Kill(-pid, syscall.SIGINT)
 	if err != nil {
 		color.Red.Println("kill process with error:", err)
 		if cmd.ProcessState != nil && !cmd.ProcessState.Exited() {
@@ -48,9 +67,7 @@ func Kill() {
 
 func start(command []string) {
 	bin, err := build()
-	if err != nil {
-		return
-	}
+	cobra.CheckErr(err)
 	for {
 		if file.IsExists(bin) {
 			break
@@ -64,9 +81,8 @@ func start(command []string) {
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	color.Green.Println("Running process...")
-	if err := cmd.Start(); err != nil {
-		color.Red.Println("run process with error:", err)
-	}
+	err = cmd.Start()
+	cobra.CheckErr(err)
 }
 
 func build() (string, error) {

@@ -53,7 +53,7 @@ you must have a main.go file in workdir.`,
 			os.Exit(126)
 		}
 		initWorkDir()
-		stop := make(chan bool)
+		stop := make(chan int64)
 		dirs, err := run.GetDirList(".")
 		dirs = handlerDir(dirs)
 		cobra.CheckErr(err)
