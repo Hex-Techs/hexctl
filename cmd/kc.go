@@ -25,6 +25,7 @@ import (
 
 var kubeconfig string
 var src string
+var ns bool
 
 // kcCmd represents the kc command
 var kcCmd = &cobra.Command{
@@ -64,7 +65,7 @@ var switchCmd = &cobra.Command{
 			cmd.Help()
 			os.Exit(1)
 		}
-		kc.Switch(kubeconfig)
+		kc.Switch(kubeconfig, ns)
 	},
 }
 
@@ -133,6 +134,9 @@ var getCmd = &cobra.Command{
 
 func init() {
 	mergeCmd.Flags().StringVarP(&src, "src", "s", "", "Specify the kubeconfig file to merge (required)")
+
+	switchCmd.Flags().BoolVarP(&ns, "namespace", "n", false, "Whether to switch namespace")
+
 	kcCmd.PersistentFlags().StringVarP(&kubeconfig, "kubeconfig", "", "", "Specify the kubeconfig file to modify, default ~/.kube/config")
 
 	mergeCmd.MarkFlagRequired("src")

@@ -42,7 +42,7 @@ func Ls(kubeconfig string) {
 }
 
 // Switch switch context for kubeconfig
-func Switch(kubeconfig string) {
+func Switch(kubeconfig string, ns bool) {
 	d := defaultKubeConfig(kubeconfig)
 	cfg := getContent(d)
 
@@ -57,6 +57,10 @@ func Switch(kubeconfig string) {
 	cfg.CurrentContext = context
 	file.Write(convert(cfg), d)
 	color.Green.Println("switch context to", context)
+	if ns {
+		Namespace(kubeconfig, "")
+	}
+	Show(kubeconfig)
 }
 
 // Show show the context
@@ -234,7 +238,7 @@ func GetContext(kubeconfig string) {
 	get.CurrentContext = ctx.Name
 	get.APIVersion = "v1"
 	get.Kind = "Config"
-	fmt.Println(convert(&get))
+	fmt.Printf("\n%s\n", convert(&get))
 }
 
 func defaultKubeConfig(kubeconfig string) string {
