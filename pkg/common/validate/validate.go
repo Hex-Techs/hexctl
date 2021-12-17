@@ -32,3 +32,17 @@ func ValidateURL(urlSlice ...string) error {
 	}
 	return nil
 }
+
+// ValidateArgs 验证参数长度，获取指定index的值
+func ValidateArgs(args []string, idx int) (string, error) {
+	if idx == -1 {
+		if len(args) != 0 {
+			return "", fmt.Errorf("args must be empty")
+		}
+		return "", nil
+	}
+	if len(args) < idx+1 {
+		return "", fmt.Errorf("args length is %d, but need %d", len(args), idx+1)
+	}
+	return args[idx], nil
+}

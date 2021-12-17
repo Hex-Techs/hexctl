@@ -16,16 +16,14 @@ limitations under the License.
 package cmd
 
 import (
-	"fmt"
-	"os"
-
+	"github.com/Hex-Techs/hexctl/pkg/common/validate"
 	"github.com/Hex-Techs/hexctl/pkg/kc"
 	"github.com/spf13/cobra"
 )
 
 var kubeconfig string
 var src string
-var ns bool
+var namespace bool
 
 // kcCmd represents the kc command
 var kcCmd = &cobra.Command{
@@ -49,10 +47,8 @@ var lsCmd = &cobra.Command{
 	Use:   "ls",
 	Short: "list all kube context",
 	Run: func(cmd *cobra.Command, args []string) {
-		if len(args) != 0 {
-			cmd.Help()
-			os.Exit(1)
-		}
+		_, err := validate.ValidateArgs(args, -1)
+		cobra.CheckErr(err)
 		kc.Ls(kubeconfig)
 	},
 }
@@ -61,11 +57,14 @@ var switchCmd = &cobra.Command{
 	Use:   "switch",
 	Short: "switch your kube context",
 	Run: func(cmd *cobra.Command, args []string) {
-		if len(args) != 0 {
-			cmd.Help()
-			os.Exit(1)
+		cluster, err := validate.ValidateArgs(args, 0)
+		if err != nil {
+			if err.Error() != "args length is 0, but need 1" {
+				cobra.CheckErr(err)
+			}
+			cluster = ""
 		}
-		kc.Switch(kubeconfig, ns)
+		kc.Switch(kubeconfig, cluster, namespace)
 	},
 }
 
@@ -73,10 +72,8 @@ var showCmd = &cobra.Command{
 	Use:   "show",
 	Short: "show your current kube context",
 	Run: func(cmd *cobra.Command, args []string) {
-		if len(args) != 0 {
-			cmd.Help()
-			os.Exit(1)
-		}
+		_, err := validate.ValidateArgs(args, -1)
+		cobra.CheckErr(err)
 		kc.Show(kubeconfig)
 	},
 }
@@ -85,10 +82,8 @@ var deleteCmd = &cobra.Command{
 	Use:   "delete",
 	Short: "delete a context from kubeconfig",
 	Run: func(cmd *cobra.Command, args []string) {
-		if len(args) != 0 {
-			cmd.Help()
-			os.Exit(1)
-		}
+		_, err := validate.ValidateArgs(args, -1)
+		cobra.CheckErr(err)
 		kc.Delete(kubeconfig)
 	},
 }
@@ -97,12 +92,12 @@ var nsCmd = &cobra.Command{
 	Use:   "ns",
 	Short: "switch your current kube context default namespace",
 	Run: func(cmd *cobra.Command, args []string) {
-		var ns string
-		if len(args) != 0 && len(args) != 1 {
-			cobra.CheckErr(fmt.Errorf("you must give a namespace by the current context cluster"))
-		}
-		if len(args) == 1 {
-			ns = args[0]
+		ns, err := validate.ValidateArgs(args, 0)
+		if err != nil {
+			if err.Error() != "args length is 0, but need 1" {
+				cobra.CheckErr(err)
+			}
+			ns = ""
 		}
 		kc.Namespace(kubeconfig, ns)
 	},
@@ -112,10 +107,8 @@ var mergeCmd = &cobra.Command{
 	Use:   "merge",
 	Short: "merge tow kubeconfig file in ~/.kube/config",
 	Run: func(cmd *cobra.Command, args []string) {
-		if len(args) != 0 {
-			cmd.Help()
-			os.Exit(1)
-		}
+		_, err := validate.ValidateArgs(args, -1)
+		cobra.CheckErr(err)
 		kc.Merge(src, kubeconfig)
 	},
 }
@@ -124,10 +117,8 @@ var getCmd = &cobra.Command{
 	Use:   "get",
 	Short: "get a context kubeconfig in kubeconfig",
 	Run: func(cmd *cobra.Command, args []string) {
-		if len(args) != 0 {
-			cmd.Help()
-			os.Exit(1)
-		}
+		_, err := validate.ValidateArgs(args, -1)
+		cobra.CheckErr(err)
 		kc.GetContext(kubeconfig)
 	},
 }
@@ -135,7 +126,7 @@ var getCmd = &cobra.Command{
 func init() {
 	mergeCmd.Flags().StringVarP(&src, "src", "s", "", "Specify the kubeconfig file to merge (required)")
 
-	switchCmd.Flags().BoolVarP(&ns, "namespace", "n", false, "Whether to switch namespace")
+	switchCmd.Flags().BoolVarP(&namespace, "namespace", "n", false, "Whether to switch namespace")
 
 	kcCmd.PersistentFlags().StringVarP(&kubeconfig, "kubeconfig", "", "", "Specify the kubeconfig file to modify, default ~/.kube/config")
 

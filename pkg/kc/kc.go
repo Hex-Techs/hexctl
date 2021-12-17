@@ -42,17 +42,29 @@ func Ls(kubeconfig string) {
 }
 
 // Switch switch context for kubeconfig
-func Switch(kubeconfig string, ns bool) {
+func Switch(kubeconfig, cluster string, ns bool) {
 	d := defaultKubeConfig(kubeconfig)
 	cfg := getContent(d)
-
-	items := []string{}
-	for _, v := range cfg.Contexts {
-		items = append(items, v.Name)
-	}
-	context := display.Select("Select the kubeconfig Context", len(items), items)
-	if context == "" {
-		return
+	var context string
+	if len(cluster) == 0 {
+		items := []string{}
+		for _, v := range cfg.Contexts {
+			items = append(items, v.Name)
+		}
+		context = display.Select("Select the kubeconfig Context", len(items), items)
+		if context == "" {
+			return
+		}
+	} else {
+		for idx, v := range cfg.Contexts {
+			if v.Name == cluster {
+				context = cluster
+			}
+			if idx == len(cfg.Contexts)-1 {
+				color.Red.Println("The cluster is not exist")
+				return
+			}
+		}
 	}
 	cfg.CurrentContext = context
 	file.Write(convert(cfg), d)
@@ -66,8 +78,6 @@ func Switch(kubeconfig string, ns bool) {
 // Show show the context
 func Show(kubeconfig string) {
 	d := defaultKubeConfig(kubeconfig)
-	// cmd := fmt.Sprintf("kubectl config current-context --kubeconfig %s", d)
-	// exec.RunCommand(cmd)
 	cfg := getContent(d)
 	var ns string
 	for _, c := range cfg.Contexts {

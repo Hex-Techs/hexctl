@@ -25,6 +25,7 @@ import (
 	"syscall"
 
 	"github.com/Hex-Techs/hexctl/pkg/common/file"
+	"github.com/Hex-Techs/hexctl/pkg/common/validate"
 	"github.com/Hex-Techs/hexctl/pkg/run"
 	"github.com/gookit/color"
 	"github.com/spf13/cobra"
@@ -43,9 +44,8 @@ var runCmd = &cobra.Command{
 It will watch *.go file and when these file changed hexctl will reload it,
 you must have a main.go file in workdir.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		if len(args) != 0 {
-			cobra.CheckErr(fmt.Errorf("unknown args %v", args))
-		}
+		_, err := validate.ValidateArgs(args, -1)
+		cobra.CheckErr(fmt.Errorf("unknown args %v", args))
 		color.Printf("%s %s %s/%s\n", Logo, version, runtime.GOOS, runtime.GOARCH)
 		pwd, _ := os.Getwd()
 		if !file.IsExists(run.MainFile) {
