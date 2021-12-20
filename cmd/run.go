@@ -16,7 +16,6 @@ limitations under the License.
 package cmd
 
 import (
-	"fmt"
 	"os"
 	"os/signal"
 	"regexp"
@@ -45,7 +44,7 @@ It will watch *.go file and when these file changed hexctl will reload it,
 you must have a main.go file in workdir.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		_, err := validate.ValidateArgs(args, -1)
-		cobra.CheckErr(fmt.Errorf("unknown args %v", args))
+		cobra.CheckErr(err)
 		color.Printf("%s %s %s/%s\n", Logo, version, runtime.GOOS, runtime.GOARCH)
 		pwd, _ := os.Getwd()
 		if !file.IsExists(run.MainFile) {
