@@ -2,40 +2,36 @@
 package kc
 
 import (
-	"bytes"
 	"context"
-	"encoding/json"
 	"fmt"
 	"os"
 	"os/user"
 	"time"
 
 	"github.com/Hex-Techs/hexctl/pkg/common/display"
-	"github.com/Hex-Techs/hexctl/pkg/common/file"
-	"github.com/ghodss/yaml"
 	"github.com/gookit/color"
 	"github.com/jedib0t/go-pretty/v6/table"
 	"github.com/spf13/cobra"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
-	kyaml "k8s.io/apimachinery/pkg/runtime/serializer/yaml"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/clientcmd"
+	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
 )
 
 // Ls show the context list
 func Ls(kubeconfig string) {
 	d := defaultKubeConfig(kubeconfig)
-	cfg := getContent(d)
+	cfg, err := clientcmd.LoadFromFile(d)
+	cobra.CheckErr(err)
 
 	t := table.NewWriter()
 	t.SetOutputMirror(os.Stdout)
-	t.AppendHeader(table.Row{"Name", "Endpoint"})
-	for _, c := range cfg.Clusters {
-		if cfg.CurrentContext == c.Name {
-			t.AppendRow([]interface{}{"* " + c.Name, c.Cluster.Server})
+	t.AppendHeader(table.Row{"Name", "Server"})
+	for i, c := range cfg.Clusters {
+		if cfg.CurrentContext == i {
+			t.AppendRow([]interface{}{"* " + i, c.Server})
 		} else {
-			t.AppendRow([]interface{}{"  " + c.Name, c.Cluster.Server})
+			t.AppendRow([]interface{}{"  " + i, c.Server})
 		}
 	}
 	t.Render()
@@ -44,30 +40,28 @@ func Ls(kubeconfig string) {
 // Switch switch context for kubeconfig
 func Switch(kubeconfig, cluster string, ns bool) {
 	d := defaultKubeConfig(kubeconfig)
-	cfg := getContent(d)
+	cfg, err := clientcmd.LoadFromFile(d)
+	cobra.CheckErr(err)
 	var context string
 	if len(cluster) == 0 {
 		items := []string{}
-		for _, v := range cfg.Contexts {
-			items = append(items, v.Name)
+		for i := range cfg.Contexts {
+			items = append(items, i)
 		}
 		context = display.Select("Select the kubeconfig Context", len(items), items)
 		if context == "" {
 			return
 		}
 	} else {
-		for idx, v := range cfg.Contexts {
-			if v.Name == cluster {
-				context = cluster
-			}
-			if idx == len(cfg.Contexts)-1 {
-				color.Red.Println("The cluster is not exist")
-				return
+		for idx := range cfg.Contexts {
+			if idx == cluster {
+				context = idx
 			}
 		}
 	}
 	cfg.CurrentContext = context
-	file.Write(convert(cfg), d)
+	err = clientcmd.WriteToFile(*cfg, d)
+	cobra.CheckErr(err)
 	color.Green.Println("switch context to", context)
 	if ns {
 		Namespace(kubeconfig, "")
@@ -78,11 +72,12 @@ func Switch(kubeconfig, cluster string, ns bool) {
 // Show show the context
 func Show(kubeconfig string) {
 	d := defaultKubeConfig(kubeconfig)
-	cfg := getContent(d)
+	cfg, err := clientcmd.LoadFromFile(d)
+	cobra.CheckErr(err)
 	var ns string
-	for _, c := range cfg.Contexts {
-		if c.Name == cfg.CurrentContext {
-			ns = c.Context.Namespace
+	for i, c := range cfg.Contexts {
+		if i == cfg.CurrentContext {
+			ns = c.Namespace
 		}
 	}
 	if ns == "" {
@@ -98,59 +93,32 @@ func Show(kubeconfig string) {
 // Delete delete a context from kubeconfig
 func Delete(kubeconfig string) {
 	d := defaultKubeConfig(kubeconfig)
-	cfg := getContent(d)
+	cfg, err := clientcmd.LoadFromFile(d)
+	cobra.CheckErr(err)
 
 	items := []string{}
-	for _, v := range cfg.Contexts {
-		items = append(items, v.Name)
+	for i := range cfg.Contexts {
+		items = append(items, i)
 	}
 	context := display.Select("Select the kubeconfig Context which do you want to delete", len(items), items)
 	if len(context) == 0 {
 		return
 	}
 	if display.Confirm(fmt.Sprintf("Do you want to Delete %s", context)) {
-		ctx, nctx := generateContext(context, cfg.Contexts)
-		_, u := generateAuth(ctx.Context.AuthInfo, cfg.AuthInfos)
-		_, c := generateCluster(ctx.Context.Cluster, cfg.Clusters)
-		cfg.Contexts = nctx
-		cfg.AuthInfos = u
-		cfg.Clusters = c
-		file.Write(convert(cfg), d)
+		ctx := cfg.Contexts[context]
+		delete(cfg.AuthInfos, ctx.AuthInfo)
+		delete(cfg.Clusters, ctx.Cluster)
+		delete(cfg.Contexts, context)
+		if cfg.CurrentContext == context {
+			for i := range cfg.Contexts {
+				cfg.CurrentContext = i
+				break
+			}
+		}
+		err = clientcmd.WriteToFile(*cfg, d)
+		cobra.CheckErr(err)
 		color.Green.Printf("Delete %s success\n", context)
 	}
-}
-
-func generateContext(name string, cts []Context) (*Context, []Context) {
-	r := cts
-	for k, v := range cts {
-		if v.Name == name {
-			r = append(r[:k], r[k+1:]...)
-			return &v, r
-		}
-	}
-	return nil, cts
-}
-
-func generateAuth(name string, auth []AuthInfo) (*AuthInfo, []AuthInfo) {
-	r := auth
-	for k, v := range auth {
-		if v.Name == name {
-			r = append(r[:k], r[k+1:]...)
-			return &v, r
-		}
-	}
-	return nil, nil
-}
-
-func generateCluster(name string, cluster []Cluster) (*Cluster, []Cluster) {
-	r := cluster
-	for k, v := range cluster {
-		if v.Name == name {
-			r = append(r[:k], r[k+1:]...)
-			return &v, r
-		}
-	}
-	return nil, nil
 }
 
 // Namespace switch default work namespace
@@ -182,73 +150,64 @@ func Namespace(kubeconfig, namespace string) {
 	} else {
 		ns = namespace
 	}
-	c := getContent(d)
-	for _, v := range c.Contexts {
-		if v.Name == c.CurrentContext {
-			v.Context.Namespace = ns
+	c, err := clientcmd.LoadFromFile(d)
+	cobra.CheckErr(err)
+	for i, v := range c.Contexts {
+		if i == c.CurrentContext {
+			v.Namespace = ns
 		}
 	}
-	// use kubectl switch work namespace
-	file.Write(convert(c), d)
-	// use kubectl switch work namespace
+	err = clientcmd.WriteToFile(*c, d)
+	cobra.CheckErr(err)
 }
 
 // Merge merge kubeconfig
 func Merge(src, kubeconfig string) {
 	d := defaultKubeConfig(kubeconfig)
-	srcConfig := getContent(src)
-	dstConfig := getContent(d)
+	srcConfig, err := clientcmd.LoadFromFile(src)
+	cobra.CheckErr(err)
+	dstConfig, err := clientcmd.LoadFromFile(d)
+	cobra.CheckErr(err)
 
 	// generate a context name by time
-	name := fmt.Sprint(time.Now().Unix())
+	tmp := fmt.Sprint(time.Now().Unix())
 
-	for index, v := range srcConfig.Contexts {
-		v.Name = fmt.Sprintf("%s-%s%d", v.Name, name, index)
-		u := v.Context.AuthInfo
-		c := v.Context.Cluster
-		for _, av := range srcConfig.AuthInfos {
-			if av.Name == u {
-				av.Name = v.Name
-				dstConfig.AuthInfos = append(dstConfig.AuthInfos, av)
-			}
-		}
-		for _, cv := range srcConfig.Clusters {
-			if cv.Name == c {
-				cv.Name = v.Name
-				dstConfig.Clusters = append(dstConfig.Clusters, cv)
-			}
-		}
-		v.Context.Cluster = v.Name
-		v.Context.AuthInfo = v.Name
-		dstConfig.Contexts = append(dstConfig.Contexts, v)
+	for idx, v := range srcConfig.Contexts {
+		name := fmt.Sprintf("%s-%s", idx, tmp)
+		dstConfig.AuthInfos[name] = srcConfig.AuthInfos[v.AuthInfo]
+		dstConfig.Clusters[name] = srcConfig.Clusters[v.Cluster]
+		v.Cluster = name
+		v.AuthInfo = name
+		dstConfig.Contexts[name] = v
 	}
-	file.Write(convert(dstConfig), d)
+	err = clientcmd.WriteToFile(*dstConfig, d)
+	cobra.CheckErr(err)
 }
 
 // GetContext get a context want
 func GetContext(kubeconfig string) {
 	d := defaultKubeConfig(kubeconfig)
-	cfg := getContent(d)
+	cfg, err := clientcmd.LoadFromFile(d)
+	cobra.CheckErr(err)
 
 	items := []string{}
-	for _, v := range cfg.Contexts {
-		items = append(items, v.Name)
+	for i := range cfg.Contexts {
+		items = append(items, i)
 	}
 	context := display.Select("Select the kubeconfig Context which do you want to manifest", len(items), items)
 	if len(context) == 0 {
 		return
 	}
-	ctx, _ := generateContext(context, cfg.Contexts)
-	u, _ := generateAuth(ctx.Context.AuthInfo, cfg.AuthInfos)
-	c, _ := generateCluster(ctx.Context.Cluster, cfg.Clusters)
-	var get KubeConfig
-	get.Contexts = []Context{*ctx}
-	get.AuthInfos = []AuthInfo{*u}
-	get.Clusters = []Cluster{*c}
-	get.CurrentContext = ctx.Name
-	get.APIVersion = "v1"
-	get.Kind = "Config"
-	fmt.Printf("\n%s\n", convert(&get))
+	get := clientcmdapi.NewConfig()
+	a := cfg.Contexts[context].AuthInfo
+	c := cfg.Contexts[context].Cluster
+
+	get.Contexts[context] = cfg.Contexts[context]
+	get.AuthInfos[a] = cfg.AuthInfos[a]
+	get.Clusters[c] = cfg.Clusters[c]
+	b, err := clientcmd.Write(*get)
+	cobra.CheckErr(err)
+	fmt.Printf("\n%s\n", string(b))
 }
 
 func defaultKubeConfig(kubeconfig string) string {
@@ -258,30 +217,4 @@ func defaultKubeConfig(kubeconfig string) string {
 		return fmt.Sprintf("%s/.kube/config", u.HomeDir)
 	}
 	return kubeconfig
-}
-
-func getContent(kubeconfig string) *KubeConfig {
-	f := file.Read(kubeconfig)
-	cfg := KubeConfig{}
-	obj := &unstructured.Unstructured{}
-	var err error
-	dec := kyaml.NewDecodingSerializer(unstructured.UnstructuredJSONScheme)
-	dec.Decode([]byte(f), nil, obj)
-
-	s := bytes.NewBuffer(nil)
-	enc := json.NewEncoder(s)
-	enc.Encode(obj)
-	err = json.Unmarshal(s.Bytes(), &cfg)
-	if err != nil {
-		color.Red.Println(err)
-	}
-	return &cfg
-}
-
-func convert(cfg *KubeConfig) string {
-	d, err := json.Marshal(cfg)
-	cobra.CheckErr(err)
-	c, err := yaml.JSONToYAML(d)
-	cobra.CheckErr(err)
-	return string(c)
 }
