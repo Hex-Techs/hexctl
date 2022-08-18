@@ -33,7 +33,7 @@ func ValidateURL(urlSlice ...string) error {
 	return nil
 }
 
-// ValidateArgs 验证参数长度，获取指定index的值
+// ValidateArgs validate args length
 func ValidateArgs(args []string, idx int) (string, error) {
 	if idx == -1 {
 		if len(args) != 0 {

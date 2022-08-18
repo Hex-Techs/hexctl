@@ -5,7 +5,7 @@ Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
-    http://www.apache.org/licenses/LICENSE-2.0
+	http://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
@@ -17,17 +17,22 @@ package cmd
 
 import (
 	"github.com/Hex-Techs/hexctl/pkg/common/validate"
-	"github.com/Hex-Techs/hexctl/pkg/kc"
+	"github.com/Hex-Techs/hexctl/pkg/kubeconfig"
 	"github.com/spf13/cobra"
 )
 
-var kubeconfig string
-var src string
-var namespace bool
+var (
+	kubeconfigPath string
+	src            string
+	dst            string
+	cascade        bool
+	byteFormat     bool
+)
 
 // kcCmd represents the kc command
 var kcCmd = &cobra.Command{
-	Use:              "kc",
+	Use:              "kubeconfig",
+	Aliases:          []string{"kc"},
 	TraverseChildren: true,
 	Short:            "manage your kubeconfig and context",
 	Long: `kc helps you manage kubeconfig files and contexts.
@@ -43,38 +48,15 @@ var kcCmd = &cobra.Command{
 you must have kubectl command already.`,
 }
 
-var lsCmd = &cobra.Command{
-	Use:   "ls",
-	Short: "list all kube context",
+var mergeCmd = &cobra.Command{
+	Use:   "merge",
+	Short: "merge tow kubeconfig file in ~/.kube/config",
 	Run: func(cmd *cobra.Command, args []string) {
 		_, err := validate.ValidateArgs(args, -1)
 		cobra.CheckErr(err)
-		kc.Ls(kubeconfig)
-	},
-}
-
-var switchCmd = &cobra.Command{
-	Use:   "switch",
-	Short: "switch your kube context",
-	Run: func(cmd *cobra.Command, args []string) {
-		cluster, err := validate.ValidateArgs(args, 0)
-		if err != nil {
-			if err.Error() != "args length is 0, but need 1" {
-				cobra.CheckErr(err)
-			}
-			cluster = ""
-		}
-		kc.Switch(kubeconfig, cluster, namespace)
-	},
-}
-
-var showCmd = &cobra.Command{
-	Use:   "show",
-	Short: "show your current kube context",
-	Run: func(cmd *cobra.Command, args []string) {
-		_, err := validate.ValidateArgs(args, -1)
+		mgr, err := kubeconfig.NewKCMgr(kubeconfigPath)
 		cobra.CheckErr(err)
-		kc.Show(kubeconfig)
+		cobra.CheckErr(mgr.MergeContext(src))
 	},
 }
 
@@ -84,32 +66,46 @@ var deleteCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		_, err := validate.ValidateArgs(args, -1)
 		cobra.CheckErr(err)
-		kc.Delete(kubeconfig)
+		mgr, err := kubeconfig.NewKCMgr(kubeconfigPath)
+		cobra.CheckErr(err)
+		cobra.CheckErr(mgr.DeleteContext())
 	},
 }
 
-var nsCmd = &cobra.Command{
-	Use:   "ns",
-	Short: "switch your current kube context default namespace",
-	Run: func(cmd *cobra.Command, args []string) {
-		ns, err := validate.ValidateArgs(args, 0)
-		if err != nil {
-			if err.Error() != "args length is 0, but need 1" {
-				cobra.CheckErr(err)
-			}
-			ns = ""
-		}
-		kc.Namespace(kubeconfig, ns)
-	},
-}
-
-var mergeCmd = &cobra.Command{
-	Use:   "merge",
-	Short: "merge tow kubeconfig file in ~/.kube/config",
+var switchCmd = &cobra.Command{
+	Use:   "switch",
+	Short: "switch your kube context",
 	Run: func(cmd *cobra.Command, args []string) {
 		_, err := validate.ValidateArgs(args, -1)
 		cobra.CheckErr(err)
-		kc.Merge(src, kubeconfig)
+		mgr, err := kubeconfig.NewKCMgr(kubeconfigPath)
+		cobra.CheckErr(err)
+		cobra.CheckErr(mgr.SwitchContext(cascade))
+	},
+}
+
+var switchNsCmd = &cobra.Command{
+	Use:     "namespace",
+	Aliases: []string{"ns"},
+	Short:   "switch your current kube context default namespace",
+	Run: func(cmd *cobra.Command, args []string) {
+		_, err := validate.ValidateArgs(args, -1)
+		cobra.CheckErr(err)
+		mgr, err := kubeconfig.NewKCMgr(kubeconfigPath)
+		cobra.CheckErr(err)
+		cobra.CheckErr(mgr.SwitchNamespace())
+	},
+}
+
+var rename = &cobra.Command{
+	Use:   "rename",
+	Short: "rename a context from kubeconfig",
+	Run: func(cmd *cobra.Command, args []string) {
+		_, err := validate.ValidateArgs(args, -1)
+		cobra.CheckErr(err)
+		mgr, err := kubeconfig.NewKCMgr(kubeconfigPath)
+		cobra.CheckErr(err)
+		cobra.CheckErr(mgr.RenameContext())
 	},
 }
 
@@ -119,25 +115,49 @@ var getCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		_, err := validate.ValidateArgs(args, -1)
 		cobra.CheckErr(err)
-		kc.GetContext(kubeconfig)
+		mgr, err := kubeconfig.NewKCMgr(kubeconfigPath)
+		cobra.CheckErr(err)
+		cobra.CheckErr(mgr.GetContext(dst, byteFormat))
+	},
+}
+
+var listCmd = &cobra.Command{
+	Use:     "list",
+	Aliases: []string{"ls"},
+	Short:   "list all kube context",
+	Run: func(cmd *cobra.Command, args []string) {
+		_, err := validate.ValidateArgs(args, -1)
+		cobra.CheckErr(err)
+		mgr, err := kubeconfig.NewKCMgr(kubeconfigPath)
+		cobra.CheckErr(err)
+		mgr.ListContext()
+	},
+}
+
+var showCmd = &cobra.Command{
+	Use:   "show",
+	Short: "show your current kube context",
+	Run: func(cmd *cobra.Command, args []string) {
+		_, err := validate.ValidateArgs(args, -1)
+		cobra.CheckErr(err)
+		mgr, err := kubeconfig.NewKCMgr(kubeconfigPath)
+		cobra.CheckErr(err)
+		mgr.ShowCurrentContext()
 	},
 }
 
 func init() {
 	mergeCmd.Flags().StringVarP(&src, "src", "s", "", "Specify the kubeconfig file to merge (required)")
 
-	switchCmd.Flags().BoolVarP(&namespace, "namespace", "n", false, "Whether to switch namespace")
+	switchCmd.Flags().BoolVarP(&cascade, "cascade", "c", false, "Whether to switch namespace")
 
-	kcCmd.PersistentFlags().StringVarP(&kubeconfig, "kubeconfig", "", "", "Specify the kubeconfig file to modify, default ~/.kube/config")
+	kcCmd.PersistentFlags().StringVarP(&kubeconfigPath, "kubeconfig", "", "", "Specify the kubeconfig file to modify, default ~/.kube/config")
+
+	getCmd.Flags().StringVarP(&dst, "dst", "d", "", "Stores the contents in the specified file")
+	getCmd.Flags().BoolVarP(&byteFormat, "byte", "b", false, "Whether to output the contents in byte format")
 
 	mergeCmd.MarkFlagRequired("src")
 
-	kcCmd.AddCommand(lsCmd)
-	kcCmd.AddCommand(switchCmd)
-	kcCmd.AddCommand(showCmd)
-	kcCmd.AddCommand(deleteCmd)
-	kcCmd.AddCommand(nsCmd)
-	kcCmd.AddCommand(mergeCmd)
-	kcCmd.AddCommand(getCmd)
+	kcCmd.AddCommand(listCmd, switchCmd, showCmd, switchNsCmd, mergeCmd, deleteCmd, getCmd, rename)
 	rootCmd.AddCommand(kcCmd)
 }

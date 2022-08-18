@@ -185,7 +185,8 @@ func CreateWebhook(gvk *GVK) {
 			}
 		}
 	}
-	if !display.Confirm("Are you sure to create webhook") {
+	d := display.NewTerminalDisplay("Are you sure to create webhook", 0)
+	if !d.Confirm() {
 		return
 	}
 	hookDir := filepath.Join(pkg, webhookDir)
@@ -238,7 +239,8 @@ func CreateController(gvk *GVK) {
 			}
 		}
 	}
-	ctrl := display.Confirm("Are you sure to create controller")
+	d := display.NewTerminalDisplay("Are you sure to create controller", 0)
+	ctrl := d.Confirm()
 	if !ctrl {
 		return
 	}
