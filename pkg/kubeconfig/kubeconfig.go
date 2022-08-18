@@ -171,14 +171,14 @@ func (k *kubeconfigMgr) ShowCurrentContext() {
 	}
 	d := display.NewTerminalDisplay("", 0)
 	header := table.Row{"cluster", "namespace"}
-	d.Table(header, []interface{}{k.clusterSelector, ns})
+	d.Table(header, []interface{}{k.config.CurrentContext, ns})
 }
 
 // ListContext show the context list
 func (k *kubeconfigMgr) ListContext() {
 	d := display.NewTerminalDisplay("", 0)
 	header := table.Row{"Current", "Name", "Server"}
-	rows := []interface{}{}
+	rows := [][]interface{}{}
 	for i, c := range k.config.Clusters {
 		current := ""
 		if k.config.CurrentContext == i {
@@ -186,7 +186,7 @@ func (k *kubeconfigMgr) ListContext() {
 		}
 		rows = append(rows, []interface{}{current, i, c.Server})
 	}
-	d.Table(header, rows)
+	d.Table(header, rows...)
 }
 
 // Switch switch context for kubeconfig
