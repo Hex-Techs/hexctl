@@ -29,7 +29,7 @@ cp ${SCRIPT_ROOT}/api/v1alpha1/* ${API_BASE}
 #                  k8s.io/kubernetes. The output-base is needed for the generators to output into the vendor dir
 #                  instead of the $GOPATH directly. For normal projects this can be dropped.
 bash "${CODEGEN_PKG}"/generate-groups.sh "deepcopy,client,lister,informer" \
-    {{.Repo}}/pkg/generated {{.Repo}}/api \
+    {{.Repo}}/client {{.Repo}}/api \
     "{{.Group}}:{{.Version}}" \
     --go-header-file "${SCRIPT_ROOT}"/hack/boilerplate.go.txt \
     --output-base "$(dirname "${BASH_SOURCE[0]}")/../../../.."
@@ -39,8 +39,8 @@ if [ -d "${API_BASE}" ]; then
     rm -rf ${SCRIPT_ROOT}/api/{{.Group}}
 fi
 
-find pkg/generated -type f -name "*.go" | xargs sed -i".out" -e "s#{{.Repo}}/api/{{.Group}}/{{.Version}}#{{.Repo}}/api/{{.Version}}#g"
-find pkg/generated -type f -name "*go.out" | xargs rm -rf
+find client -type f -name "*.go" | xargs sed -i".out" -e "s#{{.Repo}}/api/{{.Group}}/{{.Version}}#{{.Repo}}/api/{{.Version}}#g"
+find client -type f -name "*go.out" | xargs rm -rf
 
 sed -i".out" -e "s#import _ \"k8s\.io/code-generator\"#// import _ \"k8s\.io/code-generator\"#" hack/tools.go
 find . -name tools.go.out | xargs rm -rf

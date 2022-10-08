@@ -1,9 +1,24 @@
 // Package crd help to create a operator controller by kubeilder or code-generate
 package crd
 
-import "strings"
+import (
+	"bufio"
+	"errors"
+	"os"
+	"strings"
 
-// GVK this is the infomation of your CRD
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
+)
+
+const (
+	// go.mod file
+	goMOD = "go.mod"
+	// the hack script directory
+	hack = "hack"
+)
+
+// GVK this is the infomation of a CRD
 type GVK struct {
 	Repo         string
 	Domain       string
@@ -17,7 +32,7 @@ type GVK struct {
 }
 
 func (g *GVK) ToTitle(s string) string {
-	return strings.Title(s)
+	return cases.Title(language.English).String(s)
 }
 
 func (g *GVK) ToLower(s string) string {
@@ -42,4 +57,23 @@ type API struct {
 	Domain     string `yaml:"domain,omitempty"`
 	Controller bool   `yaml:"controller,omitempty"`
 	Webhook    bool   `yaml:"webhook,omitempty"`
+}
+
+// 获取 go.mod 里的 repo 信息
+func getRepo() (string, error) {
+	fd, err := os.Open(goMOD)
+	if err != nil {
+		return "", err
+	}
+	defer fd.Close()
+	br := bufio.NewReader(fd)
+	a, _, err := br.ReadLine()
+	if err != nil {
+		return "", err
+	}
+	repos := strings.Split(string(a), " ")
+	if len(repos) != 2 {
+		return "", errors.New("read go.mod error")
+	}
+	return repos[1], nil
 }

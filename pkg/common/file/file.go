@@ -7,6 +7,7 @@ import (
 	"os"
 	"text/template"
 
+	"github.com/Masterminds/sprig"
 	"github.com/spf13/cobra"
 )
 
@@ -42,8 +43,9 @@ func IsDir(name string) bool {
 }
 
 // WriteByTemp write a file by given template
-func WriteByTemp(title, content, fileName string, data interface{}) {
+func WriteByTemp(title, content, fileName string, data interface{}) error {
 	t := template.New(title)
+	t.Funcs(sprig.FuncMap())
 	t = template.Must(t.Parse(content))
 	var f *os.File
 	var err error
@@ -52,8 +54,10 @@ func WriteByTemp(title, content, fileName string, data interface{}) {
 	} else {
 		f, err = os.Open(fileName)
 	}
-	cobra.CheckErr(err)
-	t.Execute(f, data)
+	if err != nil {
+		return err
+	}
+	return t.Execute(f, data)
 }
 
 func Hash(name string) (string, error) {

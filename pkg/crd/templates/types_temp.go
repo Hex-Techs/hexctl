@@ -1,13 +1,7 @@
 package templates
 
 const (
-	Doc = `// +k8s:deepcopy-gen=package
-// +groupName={{.Group}}.{{.Domain}}
-
-package {{.Version}}
-`
-
-	Types = `package {{ .Version }}
+	Types = `package {{.Version}}
 
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -67,8 +61,10 @@ func init() {
 	SchemeBuilder.Register(&{{ .Kind }}{}, &{{ .Kind }}List{})
 }
 `
-	Groupversion = `//+kubebuilder:object:generate=true
-package v1alpha1
+	Groupversion = `// +kubebuilder:object:generate=true
+// +k8s:deepcopy-gen=package
+// +groupName={{.Group}}.{{.Domain}}
+package {{.Version}}
 
 import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
