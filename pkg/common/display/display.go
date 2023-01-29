@@ -50,7 +50,7 @@ func (td *terminalDisplay) Select() string {
 	_, result, err := prompt.Run()
 	if err != nil {
 		// If can not run select prompt, panic
-		panic(err)
+		os.Exit(1)
 	}
 	return result
 }
@@ -64,7 +64,7 @@ func (td *terminalDisplay) Confirm() bool {
 	}
 	result, err := prompt.Run()
 	if err != nil {
-		panic(err)
+		os.Exit(1)
 	}
 	if strings.ToLower(result) == "y" {
 		return true
