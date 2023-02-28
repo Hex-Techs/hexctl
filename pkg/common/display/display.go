@@ -1,6 +1,7 @@
 package display
 
 import (
+	"fmt"
 	"os"
 
 	inf "github.com/fzdwx/infinite"
@@ -39,11 +40,13 @@ type terminalDisplay struct {
 // Select terminal ui for selected
 func (td *terminalDisplay) Select() string {
 	input := components.NewInput()
-	_, err := inf.NewSingleSelect(td.Items, singleselect.WithFilterInput(input)).Display(td.Title)
+	c := inf.NewSingleSelect(td.Items, singleselect.WithFilterInput(input), singleselect.WithPageSize(td.Size))
+	s, err := c.Display(td.Title)
 	if err != nil {
+		fmt.Println("请使用 tab 选中选项")
 		os.Exit(1)
 	}
-	return input.Value()
+	return td.Items[s]
 }
 
 // Confirm terminal ui for confirmed

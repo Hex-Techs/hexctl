@@ -7,4 +7,3 @@ A collection of tools used in development
 ## Goal
 
 - Simplify `kubectl` related config subcommands
-- Can use it to generate some kubernetes CRD API code instead of `kubebuilder`
