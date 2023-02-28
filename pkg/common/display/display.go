@@ -2,10 +2,12 @@ package display
 
 import (
 	"os"
-	"strings"
 
+	inf "github.com/fzdwx/infinite"
+	"github.com/fzdwx/infinite/components"
+	"github.com/fzdwx/infinite/components/input/confirm"
+	"github.com/fzdwx/infinite/components/selection/singleselect"
 	"github.com/jedib0t/go-pretty/v6/table"
-	"github.com/manifoldco/promptui"
 )
 
 // the select ui max size
@@ -36,40 +38,24 @@ type terminalDisplay struct {
 
 // Select terminal ui for selected
 func (td *terminalDisplay) Select() string {
-	searcher := func(input string, index int) bool {
-		item := td.Items[index]
-		input = strings.Replace(strings.ToLower(input), " ", "", -1)
-		return strings.Contains(item, input)
-	}
-	prompt := promptui.Select{
-		Size:     td.Size,
-		Label:    td.Title,
-		Items:    td.Items,
-		Searcher: searcher,
-	}
-	_, result, err := prompt.Run()
+	input := components.NewInput()
+	_, err := inf.NewSingleSelect(td.Items, singleselect.WithFilterInput(input)).Display(td.Title)
 	if err != nil {
-		// If can not run select prompt, panic
 		os.Exit(1)
 	}
-	return result
+	return input.Value()
 }
 
 // Confirm terminal ui for confirmed
 func (td *terminalDisplay) Confirm() bool {
-	prompt := promptui.Prompt{
-		Label:     td.Title,
-		IsConfirm: true,
-		Default:   "N",
-	}
-	result, err := prompt.Run()
-	if err != nil {
-		os.Exit(1)
-	}
-	if strings.ToLower(result) == "y" {
-		return true
-	}
-	return false
+	c := inf.NewConfirm(
+		confirm.WithPure(),
+		confirm.WithDefaultYes(),
+		confirm.WithPrompt(td.Title),
+		confirm.WithDisplayHelp(),
+	)
+	c.Display()
+	return c.Value()
 }
 
 // Table terminal ui for table
