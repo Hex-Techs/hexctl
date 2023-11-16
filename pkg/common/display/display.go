@@ -3,12 +3,10 @@ package display
 import (
 	"fmt"
 	"os"
+	"strings"
 
-	inf "github.com/fzdwx/infinite"
-	"github.com/fzdwx/infinite/components"
-	"github.com/fzdwx/infinite/components/input/confirm"
-	"github.com/fzdwx/infinite/components/selection/singleselect"
 	"github.com/jedib0t/go-pretty/v6/table"
+	"github.com/manifoldco/promptui"
 )
 
 // the select ui max size
@@ -39,26 +37,40 @@ type terminalDisplay struct {
 
 // Select terminal ui for selected
 func (td *terminalDisplay) Select() string {
-	input := components.NewInput()
-	c := inf.NewSingleSelect(td.Items, singleselect.WithFilterInput(input), singleselect.WithPageSize(td.Size))
-	s, err := c.Display(td.Title)
+	searcher := func(input string, index int) bool {
+		item := td.Items[index]
+		input = strings.Replace(strings.ToLower(input), " ", "", -1)
+		return strings.Contains(item, input)
+	}
+	prompt := promptui.Select{
+		Size:     td.Size,
+		Label:    td.Title,
+		Items:    td.Items,
+		Searcher: searcher,
+	}
+	_, result, err := prompt.Run()
 	if err != nil {
-		fmt.Println("请使用 tab 选中选项")
+		fmt.Println(err)
 		os.Exit(1)
 	}
-	return td.Items[s]
+	return result
 }
 
 // Confirm terminal ui for confirmed
 func (td *terminalDisplay) Confirm() bool {
-	c := inf.NewConfirm(
-		confirm.WithPure(),
-		confirm.WithDefaultYes(),
-		confirm.WithPrompt(td.Title),
-		confirm.WithDisplayHelp(),
-	)
-	c.Display()
-	return c.Value()
+	prompt := promptui.Prompt{
+		Label:     td.Title,
+		IsConfirm: true,
+		Default:   "N",
+	}
+	result, err := prompt.Run()
+	if err != nil {
+		os.Exit(1)
+	}
+	if strings.ToLower(result) == "y" {
+		return true
+	}
+	return false
 }
 
 // Table terminal ui for table

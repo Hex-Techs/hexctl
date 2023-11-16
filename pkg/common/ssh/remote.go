@@ -2,7 +2,7 @@ package ssh
 
 import (
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net"
 	"os"
 	"time"
@@ -22,7 +22,7 @@ const (
 func NewRemoteOption(host, port, user, password, key, netdevice string) (*RemoteOption, error) {
 	auth := make([]ssh.AuthMethod, 0)
 	if key != "" {
-		pemBytes, err := ioutil.ReadFile(key)
+		pemBytes, err := os.ReadFile(key)
 		if err != nil {
 			return nil, err
 		}
@@ -106,7 +106,7 @@ func (r *RemoteOption) CopyFileToRmote() error {
 		return err
 	}
 	defer destFile.Close()
-	buf, err := ioutil.ReadAll(srcFile)
+	buf, err := io.ReadAll(srcFile)
 	if err != nil {
 		return err
 	}

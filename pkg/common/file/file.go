@@ -3,7 +3,6 @@ package file
 import (
 	"crypto/sha256"
 	"io"
-	"io/ioutil"
 	"os"
 	"text/template"
 
@@ -13,14 +12,14 @@ import (
 
 // Read read a file content form filepath
 func Read(filePath string) string {
-	content, err := ioutil.ReadFile(filePath)
+	content, err := os.ReadFile(filePath)
 	cobra.CheckErr(err)
 	return string(content)
 }
 
 // Write write a file by given content
 func Write(content, dst string) {
-	err := ioutil.WriteFile(dst, []byte(content), 0644)
+	err := os.WriteFile(dst, []byte(content), 0644)
 	cobra.CheckErr(err)
 }
 
