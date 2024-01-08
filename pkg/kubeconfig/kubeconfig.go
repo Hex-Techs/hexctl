@@ -73,12 +73,12 @@ func (k *kubeconfigMgr) MergeContext(src string) error {
 // DeleteContext delete a existed context
 func (k *kubeconfigMgr) DeleteContext() error {
 	items := k.readContexts()
-	d := display.NewTerminalDisplay("选择要删除的集群配置", len(items), items...)
+	d := display.NewTerminalDisplay("which one you want to delete", len(items), items...)
 	context := d.Select()
 	if len(context) == 0 {
 		return nil
 	}
-	d = display.NewTerminalDisplay(fmt.Sprintf("确定删除 %s 集群配置?", context), 0)
+	d = display.NewTerminalDisplay(fmt.Sprintf("are you sure to delete cluster %s?", context), 0)
 	if d.Confirm() {
 		ctx := k.config.Contexts[context]
 		delete(k.config.AuthInfos, ctx.AuthInfo)
@@ -94,7 +94,7 @@ func (k *kubeconfigMgr) DeleteContext() error {
 		if err != nil {
 			return err
 		}
-		fmt.Printf("删除 %s 配置成功\n", context)
+		fmt.Printf("delete %s success\n", context)
 	}
 	return nil
 }
@@ -102,13 +102,13 @@ func (k *kubeconfigMgr) DeleteContext() error {
 // RenameContext rename a existed context
 func (k *kubeconfigMgr) RenameContext() error {
 	items := k.readContexts()
-	d := display.NewTerminalDisplay("选择要修改名称的 context", len(items), items...)
+	d := display.NewTerminalDisplay("which context you want rename", len(items), items...)
 	context := d.Select()
 	if len(context) == 0 {
 		return nil
 	}
 	inputReader := bufio.NewReader(os.Stdin)
-	fmt.Printf("输入 context 名称: ")
+	fmt.Printf("input context name: ")
 	name, _ := inputReader.ReadString('\n')
 	name = strings.Replace(name, "\n", "", -1)
 	ctx := k.config.Contexts[context]
@@ -125,7 +125,7 @@ func (k *kubeconfigMgr) RenameContext() error {
 	if err != nil {
 		return err
 	}
-	fmt.Printf("成功将 context 名称从 %s 修改到 %s\n", context, name)
+	fmt.Printf("change context name from %s to %s success\n", context, name)
 	return nil
 }
 
@@ -133,7 +133,7 @@ func (k *kubeconfigMgr) RenameContext() error {
 // bf is the byte format output, used by []byte
 func (k *kubeconfigMgr) GetContext(dst string, bf bool) error {
 	items := k.readContexts()
-	d := display.NewTerminalDisplay("选择要查看的集群配置", len(items), items...)
+	d := display.NewTerminalDisplay("which one you want to view", len(items), items...)
 	context := d.Select()
 	if len(context) == 0 {
 		return nil
@@ -170,14 +170,14 @@ func (k *kubeconfigMgr) ShowCurrentContext() {
 		}
 	}
 	d := display.NewTerminalDisplay("", 0)
-	header := table.Row{"集群", "命名空间"}
+	header := table.Row{"Cluster", "Namespace"}
 	d.Table(header, []interface{}{k.config.CurrentContext, ns})
 }
 
 // ListContext show the context list
 func (k *kubeconfigMgr) ListContext() {
 	d := display.NewTerminalDisplay("", 0)
-	header := table.Row{"当前选中", "集群", "API-Server 地址"}
+	header := table.Row{"Current", "Cluster", "API-Server"}
 	rows := [][]interface{}{}
 	for i, c := range k.config.Clusters {
 		current := ""
@@ -192,7 +192,7 @@ func (k *kubeconfigMgr) ListContext() {
 // Switch switch context for kubeconfig
 func (k *kubeconfigMgr) SwitchContext(cascade bool) error {
 	items := k.readContexts()
-	d := display.NewTerminalDisplay("选择集群", len(items), items...)
+	d := display.NewTerminalDisplay("select cluster", len(items), items...)
 	k.clusterSelector = d.Select()
 	if len(k.clusterSelector) == 0 {
 		return nil
@@ -213,7 +213,7 @@ func (k *kubeconfigMgr) SwitchNamespace() error {
 	if err != nil {
 		return err
 	}
-	d := display.NewTerminalDisplay("选择命名空间", len(items), items...)
+	d := display.NewTerminalDisplay("select namespace", len(items), items...)
 	k.namespaceSelector = d.Select()
 	if len(k.namespaceSelector) == 0 {
 		return nil
